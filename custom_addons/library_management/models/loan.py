@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from datetime import timedelta
+from odoo.exceptions import ValidationError
 
 class LibraryLoan(models.Model):
     _name = 'library.loan'
@@ -11,7 +12,7 @@ class LibraryLoan(models.Model):
     date_borrow = fields.Date(string='Borrow Date', default=fields.Date.context_today)
     date_return_expected = fields.Date(string='Expected Return Date', required=True)
     date_return_actual = fields.Date(string='Actual Return Date', readonly=True)
-    currency_id = fields.Many2many('res.currency', string='Currency', defualt=lambda self: self.env.company.currency_id)
+    currency_id = fields.Many2one( 'res.currency', default=lambda self: self.env.company.currency_id )
 
 
     state = fields.Selection([
@@ -20,9 +21,9 @@ class LibraryLoan(models.Model):
         ('returned', 'Returned'),
     ], string='Status', default='draft')
 
-    late_fee = fields.Monetary(string='Late Fee', compute='_compute_late_fee', store=True)
+    late_fee = fields.Monetary(string='Late Fee', currency_field='currency_id', compute='_compute_late_fee', store=True)
 
-    @api.depends('date_borrow')
+    @api.onchange('date_borrow')
     def _onchange_date_borrow(self):
         for record in self:
             """Otomatis set tenggat waktu 7 hari dari tanggal pinjam"""
@@ -40,3 +41,38 @@ class LibraryLoan(models.Model):
                     fee = delta.days * 5000.0
 
             record.late_fee = fee
+
+    @api.constrains('date_return_expected','date_borrow')
+    def _check_dates(self):
+        for record in self:
+            if record.date_return_expected and record.date_borrow:
+                if record.date_return_expected <= record.date_borrow:
+                    raise ValidationError("tanggal tanggat waktu tidak boleh lebih dari awal atau sama dari tanggal pinjaman")
+
+    @api.model_create_multi
+    def create(self,vals_list):
+        for vals in vals_list:
+            if vals.get('name', 'New') == 'New':
+                vals['name'] = self.env['ir.sequence'].next_by_code('library.loan.sequence') or "New"
+            
+        result = super().create(vals_list)
+        return result
+
+
+    def action_confirm(self):
+        for record in self:
+            record.write({'state' : 'ongoing'})
+    
+    def action_return(self):
+        for record in self:
+            record.write({
+                'state' : 'returned',
+                'date_return_actual' : fields.Date.today()
+            })
+    
+    def action_draft(self):
+        for record in self:
+            record.write({
+                'state' : 'draft',
+                'date_return_actual' : False
+            })

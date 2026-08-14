@@ -14,7 +14,9 @@
 
     # always loaded
     'data': [
+        'views/security.xml',
         'security/ir.model.access.csv',
+        'data/sequence.xml',
         'views/book_view.xml',
         'views/member_view.xml',
         'views/loan_view.xml',

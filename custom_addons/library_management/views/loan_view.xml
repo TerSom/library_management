@@ -25,6 +25,9 @@
             <field name="arch" type="xml">
                 <form string="">
                     <header>
+                        <button string="Confirm" name="action_confirm" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button string="Return" name="action_return" type="object" class="oe_highlight" invisible="state != 'ongoing'"/>
+                        <button string="Draft" name="action_draft" type="object" invisible="state != 'returned'"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,ongoing,returned" />
                     </header>
                     <sheet>
