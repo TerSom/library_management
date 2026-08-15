@@ -2,18 +2,17 @@
 <odoo>
     <data>
         <!-- LIST VIEW -->
-        <record id="library_loan_view_tree" model="ir.ui.view">
-            <field name="name">library.loan.view.tree</field>
+        <record id="library_loan_view_list" model="ir.ui.view">
+            <field name="name">library.loan.view.list</field>
             <field name="model">library.loan</field>
             <field name="arch" type="xml">
-                <list string="Loans" decoration-danger="late_fee > 0">
+                <list string="Loans" decoration-danger="total_late_fee > 0">
                     <field name="name" />
                     <field name="member_id" />
-                    <field name="book_id" />
                     <field name="date_borrow" />
                     <field name="date_return_expected" />
-                    <field name="state" />
-                    <field name="late_fee" />
+                    <field name="state" widget="badge"/>
+                    <field name="total_late_fee" />
                 </list>
             </field>
         </record>
@@ -39,16 +38,24 @@
                         <group>
                             <group string="Informasi Utama">
                                 <field name="member_id"/>
-                                <field name="book_id"/>
+                                <field name="total_late_fee" />
                             </group>
                             <group string="Tanggal">
                                 <field name="date_borrow"/>
                                 <field name="date_return_expected"/>
-                                <field name="date_return_actual"/>
-                                <field name="currency_id" invisible='1' />
-                                <field name="late_fee" widget="monetary"/>
                             </group>
                         </group>
+                        <notebook>
+                            <page string="Loan Lines">
+                                <field name="loan_line_ids">
+                                    <list editable="bottom">
+                                        <field name="book_id"/>
+                                        <field name="date_return_actual" />
+                                        <field name="late_fee" />
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
                     </sheet>
                 </form>
             </field>

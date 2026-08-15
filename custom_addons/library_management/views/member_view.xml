@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="library_member_view_tree" model="ir.ui.view">
-        <field name="name">library.member.view.tree</field>
+    <record id="library_member_view_list" model="ir.ui.view">
+        <field name="name">library.member.view.list</field>
         <field name="model">library.member</field>
         <field name="arch" type="xml">
             <list >
                 <field name="name" />
-                <field name="memeber_number" />
+                <field name="member_number" />
                 <field name="phone" />
                 <field name="registration_date" />
             </list>
@@ -28,7 +28,7 @@
                     </div>
                     <group>
                         <group>
-                            <field name="memeber_number" />
+                            <field name="member_number" />
                             <field name="phone" />
                             <field name="mobile" />
                             <field name="email" />
