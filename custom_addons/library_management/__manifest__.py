@@ -20,13 +20,14 @@
         'views/book_view.xml',
         'views/member_view.xml',
         'views/loan_view.xml',
+        'wizard/loan_report_wizard_view.xml',
         'reports/loan_report_template.xml',
         'reports/loan_report_action.xml',
         'views/menu.xml'
         
     ],
     'installable': True,
-    'aplliaction': True,
+    'application': True,
     # only loaded in demonstration mode
     'demo': [
         'demo/demo.xml',
