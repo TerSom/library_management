@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_loan_excel_wizard_form" model="ir.ui.view">
+        <field name="name">loan.excel.report.wizard.form</field>
+        <field name="model">loan.excel.report.wizard</field>
+
+        <field name="arch" type="xml">
+            <form string="Laporan Peminjaman Excel">
+
+                <group>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </group>
+
+                <footer>
+                    <button
+                        name="action_export_excel"
+                        string="Export Excel"
+                        type="object"
+                        class="btn-primary"
+                    />
+
+                    <button
+                        string="Cancel"
+                        class="btn-secondary"
+                        special="cancel"
+                    />
+                </footer>
+
+            </form>
+        </field>
+    </record>
+
+    <record id="action_loan_excel_wizard" model="ir.actions.act_window">
+        <field name="name">Laporan Peminjaman Excel</field>
+        <field name="res_model">loan.excel.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

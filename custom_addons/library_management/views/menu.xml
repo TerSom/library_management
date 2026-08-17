@@ -47,16 +47,29 @@
             
         <menuitem
             id="menu_library_book_action"
-            name="books"
+            name="Books"
             parent="menu_library_master_data"
             action="action_library_book"
             sequence="10"/>
 
         <menuitem
             id="menu_library_member_action"
-            name="members"
+            name="Members"
             parent="menu_library_master_data"
             action="action_library_member"
+            sequence="10"/>
+
+        <menuitem
+            id="menu_library_report_root"
+            name="Reports"
+            parent="menu_library_root"
+            sequence="30"/>
+
+        <menuitem
+            id="menu_loan_excel_report"
+            name="Laporan Peminjaman (Excel)"
+            parent="menu_library_report_root"
+            action="action_loan_excel_wizard"
             sequence="10"/>
     </data>
 </odoo>
