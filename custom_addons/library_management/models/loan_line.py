@@ -12,10 +12,13 @@ class LibraryLoanLine(models.Model):
 
     @api.depends('date_return_actual', 'loan_id.date_return_expected')
     def _compute_late_fee(self):
+        today = fields.Date.today()
         for line in self:
             fee = 0.0
-            if line.date_return_actual and line.loan_id.date_return_expected:
-                if line.date_return_actual > line.loan_id.date_return_expected:
-                    delta = line.date_return_actual - line.loan_id.date_return_expected
+            expected = line.loan_id.date_return_expected
+            if expected:
+                reference_date = line.date_return_actual or today
+                if reference_date > expected:
+                    delta = reference_date - expected
                     fee = delta.days * 5000.0
             line.late_fee = fee

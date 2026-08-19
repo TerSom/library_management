@@ -6,7 +6,7 @@
             <field name="name">library.loan.view.list</field>
             <field name="model">library.loan</field>
             <field name="arch" type="xml">
-                <list string="Loans" decoration-danger="total_late_fee > 0">
+                <list string="Loans" decoration-danger="total_late_fee > 0 and state != 'returned'" decoration-success="state == 'returned'">
                     <field name="name" />
                     <field name="member_id" />
                     <field name="date_borrow" />
