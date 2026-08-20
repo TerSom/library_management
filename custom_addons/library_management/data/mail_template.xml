@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="email_template_library_loan" model="mail.template">
+            <field name="name">Library: Notifikasi Peminjaman</field>
+            <field name="model_id" ref="library_management.model_library_loan"/>
+            <field name="subject">Informasi Peminjaman Buku - {{ object.name }}</field>
+            <field name="email_to">{{ object.member_id.partner_id.email }}</field>
+
+            <!-- Desain Isi Email -->
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-family: Arial, sans-serif;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Halo <t t-out="object.member_id.partner_id.name"></t>,
+                        <br/>
+                        <br/>
+                        Terima kasih telah meminjam buku di perpustakaan kami. Berikut adalah detail peminjaman Anda:
+                        <br/>
+                        <br/>
+                        <strong>No. Referensi:</strong>
+                        <t t-out="object.name"></t>
+                        <br/>
+                        <strong>Tanggal Pinjam:</strong>
+                        <t t-out="object.date_borrow"></t>
+                        <br/>
+                        <strong>Tenggat Pengembalian:</strong>
+                        <t t-out="object.date_return_expected"></t>
+                        <br/>
+                        <br/>
+                        Mohon kembalikan buku tepat waktu untuk menghindari denda keterlambatan.
+                        <br/>
+                        <br/>
+                        Salam hangat,<br/>
+                        Admin Perpustakaan
+                    </p>
+                </div>
+            </field>
+        </record>
+    </data>
+</odoo>
