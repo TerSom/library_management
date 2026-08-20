@@ -9,11 +9,12 @@ _logger = logging.getLogger(__name__)
 class LibraryLoan(models.Model):
     _name = 'library.loan'
     _description = 'Library Loan'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     name = fields.Char(string='No. Referensi', default='New', readonly=True)
     member_id = fields.Many2one('library.member', string='Member', required=True)
     date_borrow = fields.Date(string='Borrow Date', default=fields.Date.context_today)
-    date_return_expected = fields.Date(string='Expected Return Date', required=True)
+    date_return_expected = fields.Date(string='Expected Return Date', required=True, tracking=True)
     loan_line_ids = fields.One2many('library.loan.line', 'loan_id', string='Loan Lines')
     total_late_fee = fields.Float(string='Total Denda', compute='_compute_total_late_fee', store=True)
 
@@ -21,7 +22,7 @@ class LibraryLoan(models.Model):
         ('draft', 'Draft'),
         ('ongoing', 'Ongoing'),
         ('returned', 'Returned'),
-    ], string='Status', default='draft')
+    ], string='Status', default='draft', tracking=True)
 
     @api.constrains('loan_line_ids')
     def _check_loan_lines(self):
@@ -131,7 +132,27 @@ class LibraryLoan(models.Model):
             
             except Exception as e:
                  _logger.error(f"Cron WAHA Exception: Gagal memanggil API WAHA. Error: {str(e)}")
+    
+    def action_send_email(self):
+        self.ensure_one()
 
+        template = self.env.ref('library_management.email_template_library_loan', raise_if_not_found=False)
+
+        ctx = {
+            'default' : 'library.loan',
+            'default_res_ids': self.ids,
+            'default_template_id':template.id if template else False,
+            'default_composition_mode': 'comment',
+            'force_email':True,
+        }
+
+        return {
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'mail.compose.message',
+            'target': 'new', # Jadikan pop-up di tengah layar
+            'context': ctx,
+        }
 
     # action button
     def action_confirm(self):

@@ -18,6 +18,7 @@
         'security/ir.model.access.csv',
         'data/sequence.xml',
         'data/ir_cron_data.xml',
+        'data/mail_template.xml',
         'views/book_view.xml',
         'views/member_view.xml',
         'views/loan_view.xml',
