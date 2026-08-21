@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="library_loan_view_form_inherit_account" model="ir.ui.view">
+        <field name="name">library.loan.form.inherit.account</field>
+        <field name="model">library.loan</field>
+        <field name="inherit_id" ref="library_management.library_loan_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button string="Create a bill" name="action_create_invoice" type="object" class="btn-primary" invisible="total_late_fee == 0 or invoice_id != False"/>
+            </xpath>
+
+            <xpath expr="//sheet/div[@class='oe_title']" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_view_invoice" type="object" class="oe_stat_button" icon="fa-money" invisible="invoice_id == False">
+                        <div class="o_stat_info">
+                            <span class="o_stat_text">Bill</span>
+                            <span class="o_stat_value">View Detail</span>
+                        </div>
+                    </button>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
