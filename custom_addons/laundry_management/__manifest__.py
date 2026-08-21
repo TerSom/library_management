@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Laundry_Management",
+    'name': "Laundry Management",
 
     'summary': "Short (1 phrase/line) summary of the module's purpose",
 
