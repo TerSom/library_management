@@ -5,6 +5,7 @@ class Libraryloan(models.Model):
     _inherit = 'library.loan'
 
     invoice_id = fields.Many2one('account.move', string='Invoice Denda' ,readonly=True)
+    invoice_payment_state = fields.Selection(related='invoice_id.payment_state', string='Invoice Payment State', readonly=True)
 
     def action_create_invoice(self):
         self.ensure_one()

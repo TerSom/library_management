@@ -166,6 +166,9 @@ class LibraryLoan(models.Model):
                 if not line.date_return_actual:
                     line.date_return_actual = fields.Date.today()
             record.write({'state': 'returned'})
+            if record.total_late_fee > 0:
+                record.action_create_invoice()
+            
 
     def action_draft(self):
         for record in self:
