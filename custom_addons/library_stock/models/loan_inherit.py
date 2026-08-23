@@ -1,0 +1,76 @@
+from odoo import models, fields, api
+from odoo.exceptions import UserError
+
+class LibraryLoan(models.Model):
+    _inherit = 'library.loan'
+
+    picking_ids = fields.One2many('stock.picking', 'loan_id', string='Surat Jalan Gudang')
+    
+    picking_count = fields.Integer(compute='_compute_picking_count')
+
+    @api.depends('picking_ids')
+    def _compute_picking_count(self):
+        for record in self:
+            record.picking_count = len(record.picking_ids)
+
+    def _create_stock_transfer(self, picking_type_code):
+        """Fungsi rahasia pembuat Stock Picking otomatis"""
+        self.ensure_one()
+        
+        if picking_type_code == 'outgoing':
+            picking_type = self.env.ref('stock.picking_type_out')
+            location_id = picking_type.default_location_src_id.id
+            location_dest_id = self.member_id.partner_id.property_stock_customer.id
+        else:
+
+            picking_type = self.env.ref('stock.picking_type_in')
+            location_id = self.member_id.partner_id.property_stock_customer.id
+            location_dest_id = picking_type.default_location_dest_id.id
+
+        picking = self.env['stock.picking'].create({
+            'partner_id': self.member_id.partner_id.id,
+            'picking_type_id': picking_type.id,
+            'location_id': location_id,
+            'location_dest_id': location_dest_id,
+            'loan_id': self.id,
+            'origin': self.name, 
+        })
+
+        for line in self.loan_line_ids:
+            if not line.book_id.product_id:
+                raise UserError(f"Buku '{line.book_id.name}' belum di-link ke Produk Gudang. Mohon setting di master buku terlebih dahulu!")
+                
+            self.env['stock.move'].create({
+                'name': line.book_id.name,
+                'product_id': line.book_id.product_id.id,
+                'product_uom_qty': 1,
+                'product_uom': line.book_id.product_id.uom_id.id,
+                'picking_id': picking.id,
+                'location_id': location_id,
+                'location_dest_id': location_dest_id,
+            })
+            
+        picking.action_confirm()
+
+    def action_confirm(self):
+        res = super(LibraryLoan, self).action_confirm()
+        for record in self:
+            record._create_stock_transfer('outgoing')
+        return res
+
+    def action_return(self):
+        res = super(LibraryLoan, self).action_return()
+        for record in self:
+            record._create_stock_transfer('incoming')
+        return res
+
+    def action_view_pickings(self):
+        """Membuka daftar Surat Jalan Gudang"""
+        self.ensure_one()
+        return {
+            'name': 'Surat Jalan Gudang',
+            'type': 'ir.actions.act_window',
+            'res_model': 'stock.picking',
+            'view_mode': 'list,form',
+            'domain': [('loan_id', '=', self.id)],
+        }

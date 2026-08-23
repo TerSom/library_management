@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tambahkan kolom product_id di master buku -->
+    <record id="view_library_book_form_inherit_stock" model="ir.ui.view">
+        <field name="name">library.book.form.inherit.stock</field>
+        <field name="model">library.book</field>
+        <field name="inherit_id" ref="library_management.library_book_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group/field[@name='author_id']" position="before">
+                <!-- Kita hanya memunculkan produk yang tipenya bisa disimpan (Storable/Consumable) -->
+                <field name="product_id" domain="[('type', 'in', ('consu', 'product'))]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

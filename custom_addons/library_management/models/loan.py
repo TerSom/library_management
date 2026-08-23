@@ -16,7 +16,7 @@ class LibraryLoan(models.Model):
     date_borrow = fields.Date(string='Borrow Date', default=fields.Date.context_today)
     date_return_expected = fields.Date(string='Expected Return Date', required=True, tracking=True)
     loan_line_ids = fields.One2many('library.loan.line', 'loan_id', string='Loan Lines')
-    total_late_fee = fields.Float(string='Total Denda', compute='_compute_total_late_fee', store=True)
+    total_late_fee = fields.Float(string='Total Late Fee', compute='_compute_total_late_fee', store=True)
 
     state = fields.Selection([
         ('draft', 'Draft'),

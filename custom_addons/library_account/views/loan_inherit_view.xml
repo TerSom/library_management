@@ -7,11 +7,11 @@
         <field name="arch" type="xml">
             <xpath expr="/list" position="attributes">
                 <attribute name="decoration-success">
-                    (state == 'returned' and invoice_payment_state == 'paid') or total_late_fee == 0
+                    (state == 'returned' and invoice_payment_state == 'paid') or (state == 'returned' and total_late_fee == 0)
                 </attribute>
             </xpath>
             <xpath expr="/list/field[@name='total_late_fee']" position="after">
-                <field name="invoice_payment_state" invisible="1"/>
+                <field name="invoice_payment_state" column_invisible="True"/>
             </xpath>
         </field>
     </record>
