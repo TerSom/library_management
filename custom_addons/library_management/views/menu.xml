@@ -71,5 +71,11 @@
             parent="menu_library_report_root"
             action="action_loan_excel_wizard"
             sequence="10"/>
+       
+        <menuitem id="menu_import_books_api" 
+            name="Import Books (Google API)" 
+            parent="library_management.menu_library_master_data" 
+            action="action_book_import_wizard" 
+            sequence="30"/>
     </data>
 </odoo>
