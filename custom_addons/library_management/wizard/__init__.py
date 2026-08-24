@@ -1,1 +1,1 @@
-from . import loan_report_wizard
+from . import loan_report_wizard,book_import_wizard
