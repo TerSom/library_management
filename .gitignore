@@ -41,6 +41,12 @@ package-lock.json
 package.json
 .husky
 
+# non-library modules, kept locally but not tracked in repo
+custom_addons/estate/
+custom_addons/estate_account/
+custom_addons/gold_price/
+custom_addons/laundry_management/
+
 # various virtualenv
 /bin/
 /build/
