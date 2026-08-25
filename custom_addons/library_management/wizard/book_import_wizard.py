@@ -1,4 +1,5 @@
 import requests
+import base64
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 
@@ -37,7 +38,7 @@ class BookImportWizard(models.TransientModel):
             ('name', '=', 'Gudang Test')
         ], limit=1)
 
-        url = "https://www.googleapis.com/books/v1/volumes"
+        url = self.env['ir.config_parameter'].sudo().get_param('url.books')
         params = {
             'q': self.keyword,
             'maxResults': 30,
@@ -61,11 +62,22 @@ class BookImportWizard(models.TransientModel):
         for item in items:
             volume_info = item.get('volumeInfo', {})
             identifiers = volume_info.get('industryIdentifiers', [])
+            image_link = volume_info.get('imageLinks')
+            thumbnail_url = image_link.get('thumbnail') or image_link.get('smallThumbnail')
             title = volume_info.get('title', 'No Title')
             pages = volume_info.get('pageCount') or 0
             authors = volume_info.get('authors') or ['Unknown Author']
             publisher_name = volume_info.get('publisher') or 'Unknown Publisher'
             isbn_13 = None
+            image_base64 = False
+
+            if thumbnail_url:
+                try:
+                    img_response = requests.get(thumbnail_url, timeout=5)
+                    if img_response.status_code == 200:
+                        image_base64 = base64.b64encode(img_response.content)
+                except Exception:
+                    pass
 
             for identifier in identifiers:
                 if identifier.get("type") == 'ISBN_13':
@@ -79,8 +91,6 @@ class BookImportWizard(models.TransientModel):
             author_partner = self._get_or_create_partner(author_name, is_company=False)
             publisher_partner = self._get_or_create_partner(publisher_name, is_company=True)
 
-            
-
             existing_book = book_env.search([('name', '=', title)], limit=1)
 
             if not existing_book:
@@ -90,6 +100,7 @@ class BookImportWizard(models.TransientModel):
                     'author_id': author_partner.id,
                     'publisher_id': publisher_partner.id,
                     'isbn': isbn_13,
+                    'cover_image' : image_base64,
                     'product_id': product.id
                 })
                 created_count += 1
