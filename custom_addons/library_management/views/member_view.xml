@@ -21,9 +21,9 @@
             <form string="">
                 <sheet>
                     <div class="oe_title">
-                        <label for="name" class="oe_edit_only"/>
+                        <label for="partner_id" class="oe_edit_only"/>
                         <h1>
-                            <field name="name" placeholder="e.g.Terry"/>
+                            <field name="partner_id" placeholder="e.g. Harry Potter"/>
                         </h1>
                     </div>
                     <group>

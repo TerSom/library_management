@@ -9,7 +9,7 @@
     'author': "My Company",
     'website': "https://www.yourcompany.com",
     'category': 'Services/Library',
-    'version': '0.1',
+    'license': 'LGPL-3',
     'depends': ['base', 'mail'],
 
     # always loaded
