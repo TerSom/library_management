@@ -8,6 +8,7 @@
     'data': [
         'views/book_inherit_view.xml',
         'views/loan_inherit_view.xml',
+        'views/picking_inherit.xml',
     ],
     'installable': True,
     'auto_install': False,
