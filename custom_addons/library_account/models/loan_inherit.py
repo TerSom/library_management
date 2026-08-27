@@ -19,6 +19,7 @@ class Libraryloan(models.Model):
             'move_type': 'out_invoice',
             'partner_id': self.member_id.partner_id.id,
             'invoice_origin': self.name,
+            'loan_id': self.id,
             'invoice_line_ids' : [
                 Command.create({
                     'name': f"Denda Keterlambatan Buku (Ref: {self.name})",

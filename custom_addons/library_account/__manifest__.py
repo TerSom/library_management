@@ -7,6 +7,7 @@
     'depends': ['library_management', 'account'],
     'data': [
         'views/loan_inherit_view.xml',
+        'views/account_move.xml',
     ],
     'installable': True,
     'auto_install': False,
