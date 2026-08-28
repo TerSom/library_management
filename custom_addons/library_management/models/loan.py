@@ -150,7 +150,7 @@ class LibraryLoan(models.Model):
             'type': 'ir.actions.act_window',
             'view_mode': 'form',
             'res_model': 'mail.compose.message',
-            'target': 'new', # Jadikan pop-up di tengah layar
+            'target': 'new',
             'context': ctx,
         }
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_library_loan_form_inherit_calendar" model="ir.ui.view">
+        <field name="name">library.loan.form.inherit.calendar</field>
+        <field name="model">library.loan</field>
+        <field name="inherit_id" ref="library_management.library_loan_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="%(calendar.action_calendar_event)d" type="action" class="oe_stat_button" icon="fa-calendar" context="{'form_view_initial_mode': 'edit', 'default_id': calendar_event_id}" invisible="calendar_event_id == False">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Lihat</span>
+                        <span class="o_stat_value">Kalender</span>
+                    </div>
+                </button>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
