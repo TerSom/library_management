@@ -53,13 +53,13 @@ class LibraryLoan(models.Model):
         picking.action_confirm()
 
     def action_confirm(self):
-        res = super(LibraryLoan, self).action_confirm()
+        res = super().action_confirm()
         for record in self:
             record._create_stock_transfer('outgoing')
         return res
 
     def action_return(self):
-        res = super(LibraryLoan, self).action_return()
+        res = super().action_return()
         for record in self:
             record._create_stock_transfer('incoming')
         return res
