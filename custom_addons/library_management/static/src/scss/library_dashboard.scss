@@ -1,0 +1,173 @@
+.o_library_dashboard {
+    // ==========================================
+    // FIX: Override kanban record width
+    // (default Odoo memaksa kanban record jadi sempit ~24em,
+    // ini bikin grid Bootstrap col-md-2 dkk collapse jadi
+    // wrap satu huruf per baris)
+    // ==========================================
+    &.o_kanban_view {
+        .o_kanban_renderer {
+            display: block !important;
+        }
+        .o_kanban_record {
+            width: 100% !important;
+            max-width: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            float: none !important;
+            box-shadow: none !important;
+        }
+    }
+
+    background-color: #f8f9fa;
+    padding: 24px;
+    min-height: 100vh;
+
+    .o_library_dashboard_main {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    // KPI Cards Styling
+    .o_dashboard_card {
+        display: block;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        &:hover {
+            text-decoration: none;
+
+            .card {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+            }
+        }
+        .card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+
+            h3 {
+                font-size: 2rem;
+                font-weight: 700;
+                margin-bottom: 0.5rem;
+            }
+            i {
+                opacity: 0.8;
+            }
+        }
+    }
+
+    // Alert Banner
+    .alert {
+        border-radius: 12px;
+        border: none;
+        &.alert-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            .alert-link {
+                color: white;
+                text-decoration: underline;
+
+                &:hover {
+                    color: #f8f9fa;
+                }
+            }
+        }
+    }
+
+    // Cards & Charts
+    .card {
+        border-radius: 12px;
+        border: none;
+
+        .card-header {
+            background-color: transparent;
+            padding: 1.25rem;
+            border-bottom: 1px solid #e9ecef;
+
+            h5 {
+                font-weight: 600;
+                color: #495057;
+            }
+        }
+        .card-body {
+            padding: 1.25rem;
+        }
+    }
+
+    // Overdue border highlight
+    .border-danger {
+        border-left: 4px solid #dc3545 !important;
+    }
+
+    // Button styling
+    .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        &:hover {
+            transform: translateY(-2px);
+        }
+    }
+
+    // Info alerts
+    .alert-info {
+        background-color: #e3f2fd;
+        border-color: #90caf9;
+        color: #0d47a1;
+        border-radius: 8px;
+    }
+
+    .alert-light {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+    }
+
+    // Responsive adjustments
+    @media (max-width: 768px) {
+        padding: 16px;
+
+        .o_dashboard_card .card h3 {
+            font-size: 1.5rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+        }
+    }
+
+    // Loading state
+    .o_dashboard_loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 400px;
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+    }
+
+    // Text utilities
+    .text-muted {
+        color: #6c757d !important;
+    }
+    .fw-bold {
+        font-weight: 700 !important;
+    }
+
+    // Shadow utilities
+    .shadow-sm {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+    }
+}
+
+// Color customizations for different KPI cards
+.text-primary { color: #00a09d !important; }
+.text-info { color: #0dcaf0 !important; }
+.text-success { color: #28a745 !important; }
+.text-danger { color: #dc3545 !important; }
+.text-warning { color: #ffc107 !important; }
+.text-secondary { color: #6c757d !important; }

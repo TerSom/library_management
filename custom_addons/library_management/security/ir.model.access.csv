@@ -11,3 +11,5 @@ access_loan_report_user,library.loan.report.user,model_loan_excel_report_wizard,
 access_loan_report_manager,library.loan.report.manager,model_loan_excel_report_wizard,group_library_manager,1,1,1,1
 access_book_import_user,library.book_import.user,model_book_import_wizard,group_library_user,1,1,1,0
 access_book_import_manager,library.book_import.manager,model_book_import_wizard,group_library_manager,1,1,1,1
+access_dashboard_user,library.dashboard.user,model_library_dashboard,group_library_user,1,0,0,0
+access_dashboard_manager,library.dashboard.manager,model_library_dashboard,group_library_manager,1,1,1,1

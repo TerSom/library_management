@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Create singleton dashboard record -->
+        <record id="library_dashboard_singleton" model="library.dashboard">
+            <field name="name">Library Dashboard</field>
+        </record>
+    </data>
+</odoo>

@@ -6,13 +6,13 @@
             <field name="name">library.loan.view.list</field>
             <field name="model">library.loan</field>
             <field name="arch" type="xml">
-                <list string="Loans" decoration-danger="total_late_fee > 0 and state != 'returned'">
-                    <field name="name" />
-                    <field name="member_id" />
+                <list string="Loans" decoration-danger="total_late_fee > 0 and state != 'returned'" decoration-warning="state == 'ongoing'" decoration-info="state == 'draft'" sample="1">
+                    <field name="name" decoration-bf="1"/>
+                    <field name="member_id" widget="many2one_avatar"/>
                     <field name="date_borrow" />
                     <field name="date_return_expected" />
-                    <field name="state" widget="badge"/>
-                    <field name="total_late_fee" />
+                    <field name="total_late_fee" sum="Total Late Fee"/>
+                    <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'ongoing'" decoration-success="state == 'returned'"/>
                 </list>
             </field>
         </record>
@@ -22,34 +22,38 @@
             <field name="name">library.loan.view.form</field>
             <field name="model">library.loan</field>
             <field name="arch" type="xml">
-                <form string="">
+                <form string="Loan">
                     <header>
                         <button string="Confirm" name="action_confirm" type="object" class="oe_highlight" invisible="state != 'draft'"/>
                         <button string="Return" name="action_return" type="object" class="oe_highlight" invisible="state != 'ongoing'"/>
                         <button string="Email" name="action_send_email" type="object" class="btn-secondary" invisible="state != 'ongoing'" />
+                        <button string="Set to Draft" name="action_draft" type="object" class="btn-secondary" invisible="state != 'returned'"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,ongoing,returned" />
                     </header>
                     <sheet>
+                        <div class="oe_button_box" name="button_box">
+                        </div>
                         <div class="oe_title">
+                            <span class="o_form_label">Nomor Referensi</span>
                             <h1>
-                                <field name="name" />
+                                <field name="name" readonly="1"/>
                             </h1>
                         </div>
                         <group>
-                            <group string="Informasi Utama">
-                                <field name="member_id"/>
+                            <group string="Informasi Utama" name="main_info">
+                                <field name="member_id" widget="many2one_avatar" options="{'no_create': True, 'no_edit': True}"/>
                                 <field name="total_late_fee" />
                             </group>
-                            <group string="Tanggal">
+                            <group string="Tanggal Peminjaman" name="dates">
                                 <field name="date_borrow"/>
                                 <field name="date_return_expected"/>
                             </group>
                         </group>
                         <notebook>
-                            <page string="Loan Lines">
+                            <page string="Detail Buku Dipinjam" name="loan_lines">
                                 <field name="loan_line_ids">
                                     <list editable="bottom">
-                                        <field name="book_id"/>
+                                        <field name="book_id" options="{'no_create': True}"/>
                                         <field name="date_return_actual" />
                                         <field name="late_fee" />
                                     </list>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="report_member_loan_history_template">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div class="text-center mb-4">
+                                <h2>Riwayat Peminjaman Anggota</h2>
+                            </div>
+
+                            <div class="row mt-4 mb-4">
+                                <div class="col-6">
+                                    <strong>Informasi Anggota:</strong>
+                                    <br/>
+                                    <table class="table table-sm table-borderless">
+                                        <tbody>
+                                            <tr>
+                                                <td style="width: 40%;"><strong>Nama</strong></td>
+                                                <td style="width: 5%;">:</td>
+                                                <td><span t-field="doc.partner_id.name"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>No. Anggota</strong></td>
+                                                <td>:</td>
+                                                <td><span t-field="doc.member_number"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Tanggal Registrasi</strong></td>
+                                                <td>:</td>
+                                                <td><span t-field="doc.registration_date"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Email</strong></td>
+                                                <td>:</td>
+                                                <td><span t-field="doc.partner_id.email"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Telepon</strong></td>
+                                                <td>:</td>
+                                                <td><span t-field="doc.partner_id.phone"/></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <h4 class="mt-4 mb-3">Daftar Riwayat Peminjaman</h4>
+
+                            <t t-if="doc.loan_ids">
+                                <t t-foreach="doc.loan_ids" t-as="loan">
+                                    <div class="mb-4" style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <strong>No. Referensi:</strong> <span t-field="loan.name"/>
+                                            </div>
+                                            <div class="col-6 text-end">
+                                                <strong>Status:</strong>
+                                                <span t-if="loan.state == 'draft'" class="badge bg-secondary">Draft</span>
+                                                <span t-if="loan.state == 'ongoing'" class="badge bg-warning">Ongoing</span>
+                                                <span t-if="loan.state == 'returned'" class="badge bg-success">Returned</span>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-6">
+                                                <strong>Tanggal Pinjam:</strong> <span t-field="loan.date_borrow"/>
+                                            </div>
+                                            <div class="col-6">
+                                                <strong>Tenggat Waktu:</strong> <span t-field="loan.date_return_expected"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3">
+                                            <strong>Daftar Buku:</strong>
+                                            <table class="table table-sm table-bordered mt-2">
+                                                <thead style="background-color: #f8f9fa;">
+                                                    <tr>
+                                                        <th>Judul Buku</th>
+                                                        <th>ISBN</th>
+                                                        <th>Penulis</th>
+                                                        <th>Tgl. Kembali</th>
+                                                        <th class="text-end">Denda</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr t-foreach="loan.loan_line_ids" t-as="line">
+                                                        <td><span t-field="line.book_id.name"/></td>
+                                                        <td><span t-field="line.book_id.isbn"/></td>
+                                                        <td><span t-field="line.book_id.author_id.name"/></td>
+                                                        <td>
+                                                            <span t-if="line.date_return_actual" t-field="line.date_return_actual"/>
+                                                            <span t-else="" class="text-muted">Belum Kembali</span>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            Rp. <span t-field="line.late_fee"/>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div class="row mt-2">
+                                            <div class="col-12 text-end">
+                                                <strong>Total Denda:</strong>
+                                                <span t-if="loan.total_late_fee > 0" class="text-danger">
+                                                    Rp. <span t-field="loan.total_late_fee"/>
+                                                </span>
+                                                <span t-else="">Rp. 0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                <div class="alert alert-info">
+                                    Anggota ini belum memiliki riwayat peminjaman.
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

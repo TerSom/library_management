@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="library_management.LibraryDashboard" owl="1">
+        <div class="o_library_dashboard">
+            <div class="o_library_dashboard_main" t-if="!state.loading">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h2 class="mb-2">📊 Library Management Dashboard</h2>
+                        <p class="text-muted">Real-time analytics and monitoring</p>
+                    </div>
+                </div>
+
+                <!-- KPI Cards will be rendered here -->
+                <div class="row">
+                    <div class="col-12">
+                        <p class="text-center text-muted">Dashboard data loading...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="o_dashboard_loading" t-if="state.loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

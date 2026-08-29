@@ -5,11 +5,13 @@
         <field name="name">library.book.view.tree</field>
         <field name="model">library.book</field>
         <field name="arch" type="xml">
-            <list string="">
-                <field name="name" />
+            <list string="Books" sample="1">
+                <field name="name" decoration-bf="1"/>
                 <field name="isbn" />
-                <field name="author_id" />
+                <field name="author_id" widget="many2one_avatar"/>
                 <field name="publisher_id" />
+                <field name="pages" optional="show"/>
+                <field name="active" widget="boolean_toggle" optional="hide"/>
             </list>
         </field>
     </record>
@@ -21,18 +23,19 @@
         <field name="arch" type="xml">
             <form string="Book">
                 <sheet>
+                    <field name="cover_image" widget="image" class="oe_avatar" options="{'preview_image': 'cover_image', 'size': [90, 90]}"/>
                     <div class="oe_title">
-                        <label for="name" class="oe_edit_only"/>
+                        <label for="name" class="oe_edit_only" string="Judul Buku"/>
                         <h1>
-                            <field name="name" placeholder="e.g. Harry Potter"/>
+                            <field name="name" placeholder="e.g. Harry Potter and the Sorcerer's Stone"/>
                         </h1>
                     </div>
                     <group>
-                        <group>
-                            <field name="author_id" />
-                            <field name="publisher_id" />
+                        <group string="Informasi Penerbitan">
+                            <field name="author_id" options="{'no_create': True, 'no_edit': True}"/>
+                            <field name="publisher_id" options="{'no_create': True, 'no_edit': True}"/>
                         </group>
-                        <group>
+                        <group string="Spesifikasi &amp; Status">
                             <field name="isbn" />
                             <field name="pages" />
                             <field name="active" widget="boolean_toggle" />
@@ -47,7 +50,7 @@
         <field name="name">library.book.view.kanban</field>
         <field name="model">library.book</field>
         <field name="arch" type="xml">
-            <kanban>
+            <kanban sample="1">
                 <field name="id"/>
                 <field name="name"/>
                 <field name="author_id"/>
@@ -55,17 +58,17 @@
 
                 <templates>
                     <t t-name="card">
-                        <div class="oe_kanban_global_click">
-                            <div class="o_kanban_image">
-                                <img t-att-src="kanban_image('library.book', 'cover_image', record.id.raw_value)" alt="Cover" class="o_image_64_contain"/>
-                            </div>
+                        <div class="oe_kanban_global_click d-flex align-items-center">
+                            <aside class="o_kanban_image me-3">
+                                <field name="cover_image" widget="image" options="{'img_class': 'o_image_64_contain rounded'}" alt="Cover" invisible="not cover_image"/>
+                            </aside>
 
-                            <div class="oe_kanban_details">
-                                <strong class="o_kanban_record_title">
+                            <div class="oe_kanban_details flex-grow-1">
+                                <strong class="o_kanban_record_title fs-5 mb-1 d-block">
                                     <field name="name"/>
                                 </strong>
-                                <div class="o_kanban_tags_section text-muted" title="Author">
-                                    <i class="fa fa-user" aria-label="Author"/>
+                                <div class="text-muted small">
+                                    <i class="fa fa-user me-1" aria-label="Author"/>
                                     <field name="author_id"/>
                                 </div>
                             </div>
