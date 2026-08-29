@@ -32,6 +32,14 @@
             sequence="10"/>
 
         <menuitem
+            id="menu_library_dashboard"
+            name="Dashboard"
+            parent="menu_library_root"
+            action="action_library_dashboard"
+            sequence="5"
+            groups="library_management.group_library_manager"/>
+
+        <menuitem
             id="menu_library_operations"
             name="Operations"
             parent="menu_library_root"
@@ -76,6 +84,13 @@
             parent="menu_library_report_root"
             action="action_loan_excel_wizard"
             sequence="10"/>
+
+        <menuitem
+            id="menu_loan_analysis"
+            name="Loan Analysis"
+            parent="menu_library_report_root"
+            action="action_loan_analysis"
+            sequence="20"/>
        
         <menuitem id="menu_import_books_api" 
             name="Import Books (Google API)" 
