@@ -9,6 +9,8 @@
                 <field name="partner_id" widget="many2one_avatar"/>
                 <field name="name" decoration-bf="1"/>
                 <field name="member_number" decoration-bf="1"/>
+                <field name="member_type" widget="badge"/>
+                <field name="max_loan_limit"/>
                 <field name="phone" widget="phone"/>
                 <field name="email" widget="email"/>
                 <field name="registration_date"/>
@@ -32,6 +34,8 @@
                     <group>
                         <group string="Keanggotaan">
                             <field name="member_number" placeholder="e.g. LIB-0001"/>
+                            <field name="member_type"/>
+                            <field name="max_loan_limit"/>
                             <field name="registration_date"/>
                         </group>
                         <group string="Kontak">

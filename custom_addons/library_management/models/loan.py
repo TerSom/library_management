@@ -157,6 +157,19 @@ class LibraryLoan(models.Model):
     # action button
     def action_confirm(self):
         for record in self:
+            active_borrowed = self.env['library.loan.line'].search_count([
+                ('loan_id.member_id', '=', record.member_id.id),
+                ('loan_id.state', '=', 'ongoing'),
+                ('date_return_actual', '=', False)
+            ])
+            new_loans = len(record.loan_line_ids)
+            limit = record.member_id.max_loan_limit
+            if active_borrowed + new_loans > limit:
+                raise ValidationError(
+                    f"Batas pinjaman terlampaui. Member {record.member_id.name} "
+                    f"hanya boleh meminjam maks {limit} buku. "
+                    f"(Sedang dipinjam: {active_borrowed}, baru: {new_loans})"
+                )
             record.write({'state' : 'ongoing'})
 
     
