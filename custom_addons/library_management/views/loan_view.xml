@@ -27,7 +27,6 @@
                         <button string="Confirm" name="action_confirm" type="object" class="oe_highlight" invisible="state != 'draft'"/>
                         <button string="Return" name="action_return" type="object" class="oe_highlight" invisible="state != 'ongoing'"/>
                         <button string="Email" name="action_send_email" type="object" class="btn-secondary" invisible="state != 'ongoing'" />
-                        <button string="Set to Draft" name="action_draft" type="object" class="btn-secondary" invisible="state != 'returned'"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,ongoing,returned" />
                     </header>
                     <sheet>

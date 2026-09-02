@@ -46,7 +46,7 @@ class LibraryLoan(models.Model):
     def _check_dates(self):
         for record in self:
             if record.date_return_expected and record.date_borrow:
-                if record.date_return_expected <= record.date_borrow:
+                if record.date_return_expected < record.date_borrow:
                     raise ValidationError("tanggal tanggat waktu tidak boleh lebih dari awal atau sama dari tanggal pinjaman")
 
     @api.model_create_multi
@@ -182,9 +182,3 @@ class LibraryLoan(models.Model):
             if record.total_late_fee > 0:
                 record.action_create_invoice()
             
-
-    def action_draft(self):
-        for record in self:
-            for line in record.loan_line_ids:
-                line.date_return_actual = False
-            record.write({'state': 'draft'})
