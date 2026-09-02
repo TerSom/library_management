@@ -46,7 +46,7 @@ class LibraryLoan(models.Model):
     def _check_dates(self):
         for record in self:
             if record.date_return_expected and record.date_borrow:
-                if record.date_return_expected <= record.date_borrow:
+                if record.date_return_expected < record.date_borrow:
                     raise ValidationError("tanggal tanggat waktu tidak boleh lebih dari awal atau sama dari tanggal pinjaman")
 
     @api.model_create_multi
@@ -157,6 +157,19 @@ class LibraryLoan(models.Model):
     # action button
     def action_confirm(self):
         for record in self:
+            active_borrowed = self.env['library.loan.line'].search_count([
+                ('loan_id.member_id', '=', record.member_id.id),
+                ('loan_id.state', '=', 'ongoing'),
+                ('date_return_actual', '=', False)
+            ])
+            new_loans = len(record.loan_line_ids)
+            limit = record.member_id.max_loan_limit
+            if active_borrowed + new_loans > limit:
+                raise ValidationError(
+                    f"Batas pinjaman terlampaui. Member {record.member_id.name} "
+                    f"hanya boleh meminjam maks {limit} buku. "
+                    f"(Sedang dipinjam: {active_borrowed}, baru: {new_loans})"
+                )
             record.write({'state' : 'ongoing'})
 
     
@@ -169,9 +182,3 @@ class LibraryLoan(models.Model):
             if record.total_late_fee > 0:
                 record.action_create_invoice()
             
-
-    def action_draft(self):
-        for record in self:
-            for line in record.loan_line_ids:
-                line.date_return_actual = False
-            record.write({'state': 'draft'})

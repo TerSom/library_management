@@ -57,3 +57,6 @@ custom_addons/laundry_management/
 /share/
 /src/
 venvodoo18/
+
+# local AI agent instructions, not tracked in repo
+AGENTS.md
