@@ -34,10 +34,6 @@ class BookImportWizard(models.TransientModel):
         if not api_key:
             raise UserError("API Key tidak ditemukan! Pastikan 'books.api_key' sudah ada di menu Settings > Technical > System Parameters.")
 
-        product = self.env['product.product'].search([
-            ('name', '=', 'Gudang Test')
-        ], limit=1)
-
         url = self.env['ir.config_parameter'].sudo().get_param('url.books')
         params = {
             'q': self.keyword,
@@ -96,12 +92,11 @@ class BookImportWizard(models.TransientModel):
             if not existing_book:
                 book_env.create({
                     'name': title,
-                    'pages' : pages,
+                    'pages': pages,
                     'author_id': author_partner.id,
                     'publisher_id': publisher_partner.id,
                     'isbn': isbn_13,
-                    'cover_image' : image_base64,
-                    'product_id': product.id
+                    'cover_image': image_base64,
                 })
                 created_count += 1
 

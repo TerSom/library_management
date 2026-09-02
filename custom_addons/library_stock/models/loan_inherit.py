@@ -1,5 +1,4 @@
 from odoo import models, fields, api
-from odoo.exceptions import UserError
 
 class LibraryLoan(models.Model):
     _inherit = 'library.loan'
@@ -37,14 +36,12 @@ class LibraryLoan(models.Model):
         })
 
         for line in self.loan_line_ids:
-            if not line.book_id.product_id:
-                raise UserError(f"Buku '{line.book_id.name}' belum di-link ke Produk Gudang. Mohon setting di master buku terlebih dahulu!")
-                
+            product = line.book_id.product_tmpl_id.product_variant_id
             self.env['stock.move'].create({
                 'name': line.book_id.name,
-                'product_id': line.book_id.product_id.id,
+                'product_id': product.id,
                 'product_uom_qty': 1,
-                'product_uom': line.book_id.product_id.uom_id.id,
+                'product_uom': product.uom_id.id,
                 'picking_id': picking.id,
                 'location_id': location_id,
                 'location_dest_id': location_dest_id,
