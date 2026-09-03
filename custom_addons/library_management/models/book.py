@@ -12,3 +12,4 @@ class LibraryBook(models.Model):
 
     author_id = fields.Many2one('res.partner', string='Author', domain="[('is_company', '=', False)]")
     publisher_id = fields.Many2one('res.partner', string='Publisher', domain="[('is_company', '=', True)]")
+    rating = fields.Float(string='Rating', digits=(3, 1), default=0.0)
