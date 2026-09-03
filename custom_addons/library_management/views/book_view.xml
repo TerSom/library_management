@@ -11,6 +11,7 @@
                 <field name="author_id" widget="many2one_avatar"/>
                 <field name="publisher_id" />
                 <field name="pages" optional="show"/>
+                <field name="rating" optional="show" readonly="1"/>
                 <field name="active" widget="boolean_toggle" optional="hide"/>
             </list>
         </field>
@@ -38,6 +39,7 @@
                         <group string="Spesifikasi &amp; Status">
                             <field name="isbn" />
                             <field name="pages" />
+                            <field name="rating" readonly="1"/>
                             <field name="active" widget="boolean_toggle" />
                         </group>
                     </group>
@@ -55,6 +57,7 @@
                 <field name="name"/>
                 <field name="author_id"/>
                 <field name="cover_image"/>
+                <field name="rating"/>
 
                 <templates>
                     <t t-name="card">
@@ -70,6 +73,11 @@
                                 <div class="text-muted small">
                                     <i class="fa fa-user me-1" aria-label="Author"/>
                                     <field name="author_id"/>
+                                </div>
+                                <div class="mt-1 text-warning">
+                                    <i class="fa fa-star"/>
+                                    <field name="rating"/>
+                                    <span class="text-muted"> / 5</span>
                                 </div>
                             </div>
                         </div>

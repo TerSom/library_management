@@ -1,7 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <template id="portal_my_home_menu_loan" name="Portal layout : loan menu entries" inherit_id="portal.portal_breadcrumbs" priority="40">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'loan'" class="breadcrumb-item active">
+                <span>Peminjaman Buku</span>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_loans" name="My Loans Entry" inherit_id="portal.portal_my_home" priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_category_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/web/static/img/mimetypes/document.svg'"/>
+                <t t-set="title">Peminjaman Buku</t>
+                <t t-set="url" t-value="'/my/loans'"/>
+                <t t-set="text">Lihat status dan riwayat peminjaman buku kamu</t>
+                <t t-set="placeholder_count" t-value="'loan_count'"/>
+                <t t-set="config_card" t-value="True"/>
+            </t>
+        </div>
+    </template>
+
     <template id="portal_my_loans_template" name="My Loans">
-        <t t-call="website.layout">
+        <t t-call="portal.portal_layout">
             <div id="wrap" class="container my-5">
 
                 <h3 class="mb-4 fw-bold text-primary">Dashboard Peminjaman Buku</h3>

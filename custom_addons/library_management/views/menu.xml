@@ -35,7 +35,7 @@
             id="menu_library_dashboard"
             name="Dashboard"
             parent="menu_library_root"
-            action="action_library_dashboard"
+            action="action_library_dashboard_client"
             sequence="5"
             groups="library_management.group_library_manager"/>
 

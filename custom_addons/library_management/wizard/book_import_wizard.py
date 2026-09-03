@@ -62,6 +62,7 @@ class BookImportWizard(models.TransientModel):
             thumbnail_url = image_link.get('thumbnail') or image_link.get('smallThumbnail')
             title = volume_info.get('title', 'No Title')
             pages = volume_info.get('pageCount') or 0
+            rating = float(volume_info.get('averageRating') or 0.0)
             authors = volume_info.get('authors') or ['Unknown Author']
             publisher_name = volume_info.get('publisher') or 'Unknown Publisher'
             isbn_13 = None
@@ -97,6 +98,7 @@ class BookImportWizard(models.TransientModel):
                     'publisher_id': publisher_partner.id,
                     'isbn': isbn_13,
                     'cover_image': image_base64,
+                    'rating': rating,
                 })
                 created_count += 1
 
