@@ -2,26 +2,407 @@
 <templates xml:space="preserve">
     <t t-name="library_management.LibraryDashboard" owl="1">
         <div class="o_library_dashboard">
-            <div class="o_library_dashboard_main" t-if="!state.loading">
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h2 class="mb-2">📊 Library Management Dashboard</h2>
-                        <p class="text-muted">Real-time analytics and monitoring</p>
+            <!-- Loading State -->
+            <div class="o_dashboard_loading" t-if="state.loading">
+                <div class="text-center">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"/>
+                    <p class="text-muted">Memuat dashboard...</p>
+                </div>
+            </div>
+
+            <div class="o_library_dashboard_main" t-if="!state.loading and state.data">
+                <!-- Header -->
+                <div class="dashboard-header d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h2 class="mb-1 dashboard-title">
+                            <i class="fa fa-book me-2"/>Library Dashboard
+                        </h2>
+                        <p class="text-muted mb-0">Monitoring perpustakaan secara real-time</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" t-on-click="onRefresh">
+                            <i class="fa fa-refresh me-1"/>Refresh
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" t-on-click="openLoanAnalysis">
+                            <i class="fa fa-bar-chart me-1"/>Analisis
+                        </button>
                     </div>
                 </div>
 
-                <!-- KPI Cards will be rendered here -->
-                <div class="row">
-                    <div class="col-12">
-                        <p class="text-center text-muted">Dashboard data loading...</p>
+                <!-- KPI Cards Row -->
+                <div class="row g-3 mb-4">
+                    <!-- Total Buku -->
+                    <div class="col-xl-3 col-md-6">
+                        <div class="kpi-card kpi-books" t-on-click="openBooks">
+                            <div class="kpi-icon">
+                                <i class="fa fa-book"/>
+                            </div>
+                            <div class="kpi-content">
+                                <div class="kpi-value" t-esc="state.data.kpis.total_books"/>
+                                <div class="kpi-label">Total Buku</div>
+                                <div class="kpi-sub">
+                                    <i class="fa fa-check-circle me-1"/>
+                                    <span t-esc="state.data.kpis.available_books"/> tersedia
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Anggota -->
+                    <div class="col-xl-3 col-md-6">
+                        <div class="kpi-card kpi-members" t-on-click="openMembers">
+                            <div class="kpi-icon">
+                                <i class="fa fa-users"/>
+                            </div>
+                            <div class="kpi-content">
+                                <div class="kpi-value" t-esc="state.data.kpis.total_members"/>
+                                <div class="kpi-label">Total Anggota</div>
+                                <div class="kpi-sub">
+                                    <i class="fa fa-user-plus me-1"/>Terdaftar
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pinjaman Aktif -->
+                    <div class="col-xl-3 col-md-6">
+                        <div class="kpi-card kpi-active" t-on-click="openActiveLoans">
+                            <div class="kpi-icon">
+                                <i class="fa fa-exchange"/>
+                            </div>
+                            <div class="kpi-content">
+                                <div class="kpi-value" t-esc="state.data.kpis.active_loans"/>
+                                <div class="kpi-label">Pinjaman Aktif</div>
+                                <div class="kpi-sub">
+                                    <i class="fa fa-calendar me-1"/>
+                                    <span t-esc="state.data.kpis.monthly_loans"/> bulan ini
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terlambat -->
+                    <div class="col-xl-3 col-md-6">
+                        <div t-attf-class="kpi-card kpi-overdue #{state.data.kpis.overdue_loans > 0 ? 'kpi-alert' : ''}" t-on-click="openOverdueLoans">
+                            <div class="kpi-icon">
+                                <i class="fa fa-exclamation-triangle"/>
+                            </div>
+                            <div class="kpi-content">
+                                <div class="kpi-value" t-esc="state.data.kpis.overdue_loans"/>
+                                <div class="kpi-label">Terlambat</div>
+                                <div class="kpi-sub">
+                                    <i class="fa fa-money me-1"/>
+                                    <span t-esc="formatCurrency(state.data.kpis.total_late_fee)"/> denda
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overdue Alert Banner -->
+                <t t-if="state.data.kpis.overdue_loans > 0">
+                    <div class="overdue-alert mb-4" t-on-click="openOverdueLoans">
+                        <div class="d-flex align-items-center">
+                            <div class="alert-icon-wrapper me-3">
+                                <i class="fa fa-bell fa-lg"/>
+                            </div>
+                            <div class="flex-grow-1">
+                                <strong>Perhatian!</strong> Ada <strong t-esc="state.data.kpis.overdue_loans"/> pinjaman terlambat
+                                dengan total denda <strong t-esc="formatCurrency(state.data.kpis.total_late_fee)"/>
+                            </div>
+                            <div class="ms-3">
+                                <span class="btn btn-sm btn-light">Lihat Detail <i class="fa fa-arrow-right ms-1"/></span>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Charts Row -->
+                <div class="row g-3 mb-4">
+                    <!-- Loan Trend Bar Chart -->
+                    <div class="col-lg-8">
+                        <div class="dashboard-card h-100">
+                            <div class="card-head d-flex align-items-center justify-content-between">
+                                <h5 class="mb-0"><i class="fa fa-line-chart me-2 text-primary"/>Tren Peminjaman (6 Bulan)</h5>
+                                <button class="btn btn-sm btn-link text-muted" t-on-click="openLoanAnalysis">Detail →</button>
+                            </div>
+                            <div class="card-content">
+                                <div class="bar-chart" t-if="state.data.loan_trends and state.data.loan_trends.length">
+                                    <t t-foreach="state.data.loan_trends" t-as="item" t-key="item.month">
+                                        <div class="bar-group">
+                                            <div class="bar-value" t-esc="item.count"/>
+                                            <div class="bar-track">
+                                                <div class="bar-fill" t-attf-style="height: #{getBarHeight(item.count, getLoanTrendMax())}%"/>
+                                            </div>
+                                            <div class="bar-label" t-esc="item.month.split(' ')[0]"/>
+                                        </div>
+                                    </t>
+                                </div>
+                                <div class="text-center text-muted py-5" t-else="">
+                                    <i class="fa fa-bar-chart fa-3x mb-3 d-block opacity-25"/>
+                                    Belum ada data pinjaman
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Stats -->
+                    <div class="col-lg-4">
+                        <div class="dashboard-card h-100">
+                            <div class="card-head">
+                                <h5 class="mb-0"><i class="fa fa-pie-chart me-2 text-info"/>Statistik Anggota</h5>
+                            </div>
+                            <div class="card-content">
+                                <t t-if="state.data.category_stats and state.data.category_stats.length">
+                                    <t t-foreach="state.data.category_stats" t-as="cat" t-key="cat.type">
+                                        <div class="stat-row">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="fw-semibold" t-esc="cat.type"/>
+                                                <span class="text-muted small">
+                                                    <span t-esc="cat.member_count"/> anggota · <span t-esc="cat.loan_count"/> pinjaman
+                                                </span>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar"
+                                                     role="progressbar"
+                                                     t-attf-style="width: #{getBarHeight(cat.loan_count, getCategoryChartMax())}%"
+                                                     t-attf-class="progress-bar #{cat_index === 0 ? 'bg-primary' : (cat_index === 1 ? 'bg-info' : 'bg-warning')}"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </t>
+                                <div class="text-center text-muted py-4" t-else="">
+                                    Belum ada data
+                                </div>
+
+                                <!-- Quick Actions -->
+                                <div class="mt-4 pt-3 border-top">
+                                    <small class="text-muted text-uppercase fw-bold d-block mb-2">Aksi Cepat</small>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-sm btn-outline-danger" t-on-click="openOverdueLoans">
+                                            <i class="fa fa-exclamation-triangle me-1"/>Pinjaman Terlambat
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" t-on-click="openAllLoans">
+                                            <i class="fa fa-list me-1"/>Semua Pinjaman
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success" t-on-click="openBooks">
+                                            <i class="fa fa-book me-1"/>Kelola Buku
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tables Row -->
+                <div class="row g-3 mb-4">
+                    <!-- Overdue Loans Table -->
+                    <div class="col-lg-6" t-if="state.data.overdue_loans and state.data.overdue_loans.length">
+                        <div class="dashboard-card h-100">
+                            <div class="card-head d-flex align-items-center justify-content-between">
+                                <h5 class="mb-0">
+                                    <i class="fa fa-exclamation-circle me-2 text-danger"/>Pinjaman Terlambat
+                                    <span class="badge bg-danger ms-2" t-esc="state.data.overdue_loans.length"/>
+                                </h5>
+                                <button class="btn btn-sm btn-link text-danger" t-on-click="openOverdueLoans">Lihat Semua →</button>
+                            </div>
+                            <div class="card-content p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0 dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Ref</th>
+                                                <th>Anggota</th>
+                                                <th>Buku</th>
+                                                <th class="text-center">Terlambat</th>
+                                                <th class="text-end">Denda</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="state.data.overdue_loans.slice(0, 5)" t-as="loan" t-key="loan.id">
+                                                <tr class="cursor-pointer" t-on-click="() => this.openLoanDetail(loan.id)">
+                                                    <td class="fw-semibold text-primary" t-esc="loan.name"/>
+                                                    <td>
+                                                        <div t-esc="loan.member"/>
+                                                        <small class="text-muted" t-if="loan.member_phone" t-esc="loan.member_phone"/>
+                                                    </td>
+                                                    <td>
+                                                        <small t-esc="loan.books" class="text-truncate d-inline-block" style="max-width: 150px;"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span t-attf-class="badge #{loan.days_late > 14 ? 'bg-danger' : (loan.days_late > 7 ? 'bg-warning' : 'bg-secondary')}">
+                                                            <t t-esc="loan.days_late"/> hari
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end fw-semibold text-danger" t-esc="formatCurrency(loan.late_fee)"/>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Popular Books -->
+                    <div t-attf-class="#{state.data.overdue_loans and state.data.overdue_loans.length ? 'col-lg-6' : 'col-lg-12'}">
+                        <div class="dashboard-card h-100">
+                            <div class="card-head d-flex align-items-center justify-content-between">
+                                <h5 class="mb-0"><i class="fa fa-trophy me-2 text-warning"/>Buku Terpopuler</h5>
+                                <button class="btn btn-sm btn-link text-muted" t-on-click="openPopularBooks">Detail →</button>
+                            </div>
+                            <div class="card-content p-0" t-if="state.data.popular_books and state.data.popular_books.length">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0 dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:40px;">#</th>
+                                                <th>Judul Buku</th>
+                                                <th class="text-end">Dipinjam</th>
+                                                <th style="width: 120px;">Grafik</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="state.data.popular_books.slice(0, 8)" t-as="book" t-key="book.book">
+                                                <tr>
+                                                    <td class="text-muted" t-esc="book_index + 1"/>
+                                                    <td>
+                                                        <span t-if="book_index &lt; 3" class="me-1">
+                                                            <t t-if="book_index === 0">🥇</t>
+                                                            <t t-if="book_index === 1">🥈</t>
+                                                            <t t-if="book_index === 2">🥉</t>
+                                                        </span>
+                                                        <span t-esc="book.book"/>
+                                                    </td>
+                                                    <td class="text-end fw-semibold" t-esc="book.count"/>
+                                                    <td>
+                                                        <div class="progress" style="height: 6px;">
+                                                            <div class="progress-bar bg-warning"
+                                                                 t-attf-style="width: #{getBarHeight(book.count, getPopularBooksMax())}%"/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-content text-center text-muted py-4" t-else="">
+                                <i class="fa fa-trophy fa-3x mb-3 d-block opacity-25"/>
+                                Belum ada data peminjaman
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Row -->
+                <div class="row g-3">
+                    <!-- Recent Activities -->
+                    <div class="col-lg-7">
+                        <div class="dashboard-card h-100">
+                            <div class="card-head d-flex align-items-center justify-content-between">
+                                <h5 class="mb-0"><i class="fa fa-clock-o me-2 text-secondary"/>Aktivitas Terbaru</h5>
+                                <button class="btn btn-sm btn-link text-muted" t-on-click="openAllLoans">Lihat Semua →</button>
+                            </div>
+                            <div class="card-content p-0" t-if="state.data.recent_activities and state.data.recent_activities.length">
+                                <div class="activity-list">
+                                    <t t-foreach="state.data.recent_activities" t-as="act" t-key="act.id">
+                                        <div class="activity-item" t-on-click="() => this.openLoanDetail(act.id)">
+                                            <div class="activity-icon-wrapper" t-attf-class="#{act.state === 'returned' ? 'bg-success-light' : (act.state === 'ongoing' ? 'bg-primary-light' : 'bg-secondary-light')}">
+                                                <i t-attf-class="fa #{act.state === 'returned' ? 'fa-check' : (act.state === 'ongoing' ? 'fa-exchange' : 'fa-file-text-o')} #{act.state === 'returned' ? 'text-success' : (act.state === 'ongoing' ? 'text-primary' : 'text-secondary')}"/>
+                                            </div>
+                                            <div class="activity-content flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <strong t-esc="act.member"/>
+                                                        <span class="text-muted mx-1">—</span>
+                                                        <span t-esc="act.action"/>
+                                                    </div>
+                                                    <span t-attf-class="badge #{getStateBadge(act.state)} ms-2" t-esc="getStateLabel(act.state)"/>
+                                                </div>
+                                                <div class="small text-muted mt-1">
+                                                    <span class="me-3"><i class="fa fa-hashtag me-1"/><t t-esc="act.name"/></span>
+                                                    <span class="me-3"><i class="fa fa-book me-1"/><t t-esc="act.books_count"/> buku</span>
+                                                    <span><i class="fa fa-calendar me-1"/><t t-esc="act.date"/></span>
+                                                </div>
+                                                <div class="small text-muted mt-1" t-if="act.books">
+                                                    <i class="fa fa-bookmark-o me-1"/><t t-esc="act.books"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="card-content text-center text-muted py-4" t-else="">
+                                <i class="fa fa-clock-o fa-3x mb-3 d-block opacity-25"/>
+                                Belum ada aktivitas
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Members -->
+                    <div class="col-lg-5">
+                        <div class="dashboard-card h-100">
+                            <div class="card-head d-flex align-items-center justify-content-between">
+                                <h5 class="mb-0"><i class="fa fa-star me-2 text-warning"/>Anggota Teraktif</h5>
+                                <button class="btn btn-sm btn-link text-muted" t-on-click="openMembers">Lihat Semua →</button>
+                            </div>
+                            <div class="card-content p-0" t-if="state.data.top_members and state.data.top_members.length">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0 dashboard-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:40px;">#</th>
+                                                <th>Nama</th>
+                                                <th class="text-end">Pinjaman</th>
+                                                <th style="width: 100px;">Grafik</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="state.data.top_members.slice(0, 8)" t-as="member" t-key="member.member">
+                                                <tr>
+                                                    <td>
+                                                        <span t-if="member_index &lt; 3" class="fw-bold">
+                                                            <t t-if="member_index === 0">🥇</t>
+                                                            <t t-if="member_index === 1">🥈</t>
+                                                            <t t-if="member_index === 2">🥉</t>
+                                                        </span>
+                                                        <span t-else="" class="text-muted" t-esc="member_index + 1"/>
+                                                    </td>
+                                                    <td class="fw-semibold" t-esc="member.member"/>
+                                                    <td class="text-end">
+                                                        <span class="badge bg-primary-subtle text-primary" t-esc="member.loan_count"/>
+                                                    </td>
+                                                    <td>
+                                                        <div class="progress" style="height: 6px;">
+                                                            <div class="progress-bar bg-primary"
+                                                                 t-attf-style="width: #{getBarHeight(member.loan_count, getMemberChartMax())}%"/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-content text-center text-muted py-4" t-else="">
+                                <i class="fa fa-star fa-3x mb-3 d-block opacity-25"/>
+                                Belum ada data anggota
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            
-            <div class="o_dashboard_loading" t-if="state.loading">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
+
+            <!-- Empty State -->
+            <div class="text-center py-5" t-if="!state.loading and !state.data">
+                <i class="fa fa-dashboard fa-4x text-muted mb-3 d-block"/>
+                <h4 class="text-muted">Dashboard tidak tersedia</h4>
+                <p class="text-muted">Data dashboard belum ditemukan.</p>
+                <button class="btn btn-primary" t-on-click="onRefresh">
+                    <i class="fa fa-refresh me-1"/>Muat Ulang
+                </button>
             </div>
         </div>
     </t>

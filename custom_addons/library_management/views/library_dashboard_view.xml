@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Dashboard Kanban View -->
+    <!-- Dashboard Client Action (OWL Component) -->
+    <record id="action_library_dashboard_client" model="ir.actions.client">
+        <field name="name">Dashboard</field>
+        <field name="tag">library_dashboard</field>
+    </record>
+
+    <!-- Keep kanban view as fallback -->
     <record id="library_dashboard_kanban_view" model="ir.ui.view">
         <field name="name">library.dashboard.kanban</field>
         <field name="model">library.dashboard</field>
@@ -15,204 +21,34 @@
                 <field name="total_late_fee"/>
                 <templates>
                     <t t-name="kanban-box">
-                        <div class="container-fluid o_library_dashboard_main">
-                            <!-- Page Header -->
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                    <h2 class="mb-0">📊 Library Management Dashboard</h2>
-                                    <p class="text-muted">Real-time analytics and monitoring</p>
-                                </div>
-                            </div>
-
-                            <!-- KPI Cards Section -->
-                            <div class="row mb-4">
-                                <!-- Total Books -->
-                                <div class="col-md-2 col-sm-6 mb-3">
-                                    <a type="object" name="action_view_books" class="o_dashboard_card text-decoration-none">
-                                        <div class="card border-0 shadow-sm h-100">
-                                            <div class="card-body text-center">
-                                                <div class="text-primary mb-2">
-                                                    <i class="fa fa-book fa-2x"/>
-                                                </div>
-                                                <h3 class="mb-1 fw-bold text-primary">
-                                                    <field name="total_books"/>
-                                                </h3>
-                                                <p class="mb-0 text-muted small">Total Books</p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-
-                                <!-- Total Members -->
-                                <div class="col-md-2 col-sm-6 mb-3">
-                                    <a type="object" name="action_view_members" class="o_dashboard_card text-decoration-none">
-                                        <div class="card border-0 shadow-sm h-100">
-                                            <div class="card-body text-center">
-                                                <div class="text-info mb-2">
-                                                    <i class="fa fa-users fa-2x"/>
-                                                </div>
-                                                <h3 class="mb-1 fw-bold text-info">
-                                                    <field name="total_members"/>
-                                                </h3>
-                                                <p class="mb-0 text-muted small">Total Members</p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-
-                                <!-- Active Loans -->
-                                <div class="col-md-2 col-sm-6 mb-3">
-                                    <a type="object" name="action_view_all_loans" class="o_dashboard_card text-decoration-none">
-                                        <div class="card border-0 shadow-sm h-100">
-                                            <div class="card-body text-center">
-                                                <div class="text-success mb-2">
-                                                    <i class="fa fa-check-circle fa-2x"/>
-                                                </div>
-                                                <h3 class="mb-1 fw-bold text-success">
-                                                    <field name="active_loans_count"/>
-                                                </h3>
-                                                <p class="mb-0 text-muted small">Active Loans</p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-
-                                <!-- Overdue Loans (Alert) -->
-                                <div class="col-md-2 col-sm-6 mb-3">
-                                    <a type="object" name="action_view_overdue_loans" class="o_dashboard_card text-decoration-none">
-                                        <div class="card border-0 shadow-sm h-100 border-danger" t-att-class="record.overdue_loans_count.raw_value > 0 ? 'border-start border-danger border-3' : ''">
-                                            <div class="card-body text-center">
-                                                <div class="text-danger mb-2">
-                                                    <i class="fa fa-exclamation-triangle fa-2x"/>
-                                                </div>
-                                                <h3 class="mb-1 fw-bold text-danger">
-                                                    <field name="overdue_loans_count"/>
-                                                </h3>
-                                                <p class="mb-0 text-muted small">Overdue Loans</p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-
-                                <!-- Monthly Loans -->
-                                <div class="col-md-2 col-sm-6 mb-3">
-                                    <div class="card border-0 shadow-sm h-100">
-                                        <div class="card-body text-center">
-                                            <div class="text-secondary mb-2">
-                                                <i class="fa fa-calendar fa-2x"/>
-                                            </div>
-                                            <h3 class="mb-1 fw-bold text-secondary">
-                                                <field name="monthly_loans_count"/>
-                                            </h3>
-                                            <p class="mb-0 text-muted small">This Month</p>
-                                        </div>
+                        <div class="container-fluid p-3">
+                            <div class="row g-3">
+                                <div class="col-md-3 col-6">
+                                    <div class="card border-0 shadow-sm text-center p-3">
+                                        <i class="fa fa-book fa-2x text-primary mb-2"/>
+                                        <h3 class="fw-bold text-primary mb-0"><field name="total_books"/></h3>
+                                        <small class="text-muted">Total Buku</small>
                                     </div>
                                 </div>
-
-                                <!-- Total Late Fee -->
-                                <div class="col-md-2 col-sm-6 mb-3">
-                                    <div class="card border-0 shadow-sm h-100">
-                                        <div class="card-body text-center">
-                                            <div class="text-warning mb-2">
-                                                <i class="fa fa-money fa-2x"/>
-                                            </div>
-                                            <h3 class="mb-1 fw-bold text-warning">
-                                                Rp <field name="total_late_fee" widget="float" options="{'precision': 0}"/>
-                                            </h3>
-                                            <p class="mb-0 text-muted small">Late Fees</p>
-                                        </div>
+                                <div class="col-md-3 col-6">
+                                    <div class="card border-0 shadow-sm text-center p-3">
+                                        <i class="fa fa-users fa-2x text-info mb-2"/>
+                                        <h3 class="fw-bold text-info mb-0"><field name="total_members"/></h3>
+                                        <small class="text-muted">Total Anggota</small>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Overdue Alert Banner -->
-                            <div class="row mb-4" t-if="record.overdue_loans_count.raw_value > 0">
-                                <div class="col-12">
-                                    <div class="alert alert-danger d-flex align-items-center shadow-sm" role="alert">
-                                        <i class="fa fa-exclamation-circle fa-2x me-3"/>
-                                        <div class="flex-grow-1">
-                                            <h5 class="alert-heading mb-1">⚠️ Overdue Loans Alert!</h5>
-                                            <p class="mb-0">
-                                                You have <strong><field name="overdue_loans_count"/></strong> overdue loan(s) that require immediate attention.
-                                                <a type="object" name="action_view_overdue_loans" class="alert-link fw-bold ms-2">View Details →</a>
-                                            </p>
-                                        </div>
+                                <div class="col-md-3 col-6">
+                                    <div class="card border-0 shadow-sm text-center p-3">
+                                        <i class="fa fa-exchange fa-2x text-success mb-2"/>
+                                        <h3 class="fw-bold text-success mb-0"><field name="active_loans_count"/></h3>
+                                        <small class="text-muted">Pinjaman Aktif</small>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Charts Section -->
-                            <div class="row mb-4">
-                                <!-- Loan Trends Chart -->
-                                <div class="col-md-8 mb-3">
-                                    <div class="card border-0 shadow-sm h-100">
-                                        <div class="card-header bg-white border-0 pt-3">
-                                            <h5 class="mb-0">📈 Loan Trends (Last 6 Months)</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="alert alert-info">
-                                                <i class="fa fa-info-circle"/> 
-                                                Click menu: Library → Reports → Loan Analysis untuk melihat grafik interaktif
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Popular Books Chart -->
-                                <div class="col-md-4 mb-3">
-                                    <div class="card border-0 shadow-sm h-100">
-                                        <div class="card-header bg-white border-0 pt-3">
-                                            <h5 class="mb-0">🏆 Top Statistics</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="mb-3">
-                                                <small class="text-muted text-uppercase fw-bold">Quick Actions</small>
-                                            </div>
-                                            <div class="d-grid gap-2">
-                                                <button type="object" name="action_view_overdue_loans" class="btn btn-sm btn-outline-danger">
-                                                    <i class="fa fa-exclamation-triangle"/> View Overdue Loans
-                                                </button>
-                                                <button type="object" name="action_view_all_loans" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fa fa-list"/> View All Loans
-                                                </button>
-                                                <button type="object" name="action_view_books" class="btn btn-sm btn-outline-success">
-                                                    <i class="fa fa-book"/> Manage Books
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Recent Activities & Top Members -->
-                            <div class="row">
-                                <!-- Recent Activities -->
-                                <div class="col-md-6 mb-3">
-                                    <div class="card border-0 shadow-sm h-100">
-                                        <div class="card-header bg-white border-0 pt-3">
-                                            <h5 class="mb-0">🕐 Recent Activities</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <p class="text-muted small mb-3">Latest loan transactions in the system</p>
-                                            <div class="alert alert-light">
-                                                <i class="fa fa-arrow-right"/> Go to <strong>Library → Operations → Loans</strong> untuk melihat semua aktivitas
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Top Members -->
-                                <div class="col-md-6 mb-3">
-                                    <div class="card border-0 shadow-sm h-100">
-                                        <div class="card-header bg-white border-0 pt-3">
-                                            <h5 class="mb-0">⭐ Most Active Members</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <p class="text-muted small mb-3">Members with most loan transactions</p>
-                                            <div class="alert alert-light">
-                                                <i class="fa fa-arrow-right"/> Go to <strong>Library → Master Data → Members</strong> untuk melihat detail
-                                            </div>
-                                        </div>
+                                <div class="col-md-3 col-6">
+                                    <div class="card border-0 shadow-sm text-center p-3">
+                                        <i class="fa fa-exclamation-triangle fa-2x text-danger mb-2"/>
+                                        <h3 class="fw-bold text-danger mb-0"><field name="overdue_loans_count"/></h3>
+                                        <small class="text-muted">Terlambat</small>
                                     </div>
                                 </div>
                             </div>
@@ -223,26 +59,9 @@
         </field>
     </record>
 
-    <!-- Dashboard Action -->
-    <record id="action_library_dashboard" model="ir.actions.act_window">
-        <field name="name">Dashboard</field>
-        <field name="res_model">library.dashboard</field>
-        <field name="view_mode">kanban</field>
-        <field name="view_id" ref="library_dashboard_kanban_view"/>
-        <field name="target">current</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Welcome to Library Management Dashboard!
-            </p>
-            <p>
-                Your dashboard is loading...
-            </p>
-        </field>
-    </record>
-
-    <!-- Loan Analysis Action (for charts) -->
+    <!-- Loan Analysis Action -->
     <record id="action_loan_analysis" model="ir.actions.act_window">
-        <field name="name">Loan Analysis</field>
+        <field name="name">Analisis Pinjaman</field>
         <field name="res_model">library.loan</field>
         <field name="view_mode">graph,pivot,list</field>
         <field name="context">{'group_by': ['date_borrow']}</field>
@@ -250,7 +69,7 @@
 
     <!-- Popular Books Analysis -->
     <record id="action_popular_books_analysis" model="ir.actions.act_window">
-        <field name="name">Popular Books</field>
+        <field name="name">Buku Populer</field>
         <field name="res_model">library.loan.line</field>
         <field name="view_mode">graph,pivot,list</field>
         <field name="context">{'group_by': ['book_id']}</field>

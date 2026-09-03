@@ -2,12 +2,13 @@ from odoo import models, fields, api
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
+
 class LibraryDashboard(models.Model):
     _name = 'library.dashboard'
     _description = 'Library Management Dashboard'
 
     name = fields.Char(string='Dashboard Name', default='Library Dashboard')
-    
+
     # KPI Fields
     total_books = fields.Integer(string='Total Books', compute='_compute_kpis')
     total_members = fields.Integer(string='Total Members', compute='_compute_kpis')
@@ -15,41 +16,45 @@ class LibraryDashboard(models.Model):
     overdue_loans_count = fields.Integer(string='Overdue Loans', compute='_compute_kpis')
     monthly_loans_count = fields.Integer(string='Monthly Loans', compute='_compute_kpis')
     total_late_fee = fields.Float(string='Total Late Fee', compute='_compute_kpis')
+    available_books_count = fields.Integer(string='Available Books', compute='_compute_kpis')
+    returned_today_count = fields.Integer(string='Returned Today', compute='_compute_kpis')
 
     @api.depends_context('today')
     def _compute_kpis(self):
+        today = fields.Date.today()
         for record in self:
-            # Total Books (active only)
             record.total_books = self.env['library.book'].search_count([('active', '=', True)])
-            
-            # Total Members
             record.total_members = self.env['library.member'].search_count([])
-            
-            # Active Loans (ongoing)
             record.active_loans_count = self.env['library.loan'].search_count([('state', '=', 'ongoing')])
-            
-            # Overdue Loans
-            today = fields.Date.today()
             record.overdue_loans_count = self.env['library.loan'].search_count([
                 ('state', '=', 'ongoing'),
                 ('date_return_expected', '<', today)
             ])
-            
-            # Monthly Loans (this month)
             start_of_month = today.replace(day=1)
             record.monthly_loans_count = self.env['library.loan'].search_count([
                 ('date_borrow', '>=', start_of_month),
                 ('date_borrow', '<=', today)
             ])
-            
-            # Total Late Fee
             loans = self.env['library.loan'].search([])
             record.total_late_fee = sum(loans.mapped('total_late_fee'))
+
+            # Books currently on loan
+            on_loan_book_ids = self.env['library.loan.line'].search([
+                ('loan_id.state', '=', 'ongoing'),
+                ('date_return_actual', '=', False),
+            ]).mapped('book_id.id')
+            record.available_books_count = record.total_books - len(set(on_loan_book_ids))
+
+            # Returned today
+            record.returned_today_count = self.env['library.loan'].search_count([
+                ('state', '=', 'returned'),
+                ('write_date', '>=', datetime.combine(today, datetime.min.time())),
+            ])
 
     def get_dashboard_data(self):
         """Return all dashboard data in one call"""
         self.ensure_one()
-        
+
         return {
             'kpis': {
                 'total_books': self.total_books,
@@ -58,49 +63,48 @@ class LibraryDashboard(models.Model):
                 'overdue_loans': self.overdue_loans_count,
                 'monthly_loans': self.monthly_loans_count,
                 'total_late_fee': self.total_late_fee,
+                'available_books': self.available_books_count,
+                'returned_today': self.returned_today_count,
             },
             'loan_trends': self.get_loan_trend_data(),
             'popular_books': self.get_popular_books_data(),
             'overdue_loans': self.get_overdue_loans_data(),
             'recent_activities': self.get_recent_activities_data(),
             'top_members': self.get_top_members_data(),
+            'category_stats': self.get_category_stats(),
         }
 
     def get_loan_trend_data(self):
         """Get loan trends for last 6 months"""
         today = fields.Date.today()
         six_months_ago = today - relativedelta(months=6)
-        
+
         loans = self.env['library.loan'].search([
             ('date_borrow', '>=', six_months_ago),
             ('date_borrow', '<=', today)
         ])
-        
-        # Group by month
+
         monthly_data = {}
         for loan in loans:
             month_key = loan.date_borrow.strftime('%Y-%m')
-            if month_key not in monthly_data:
-                monthly_data[month_key] = 0
-            monthly_data[month_key] += 1
-        
-        # Format for chart
+            monthly_data[month_key] = monthly_data.get(month_key, 0) + 1
+
         result = []
         current_date = six_months_ago
-        for i in range(7):  # 6 months + current
+        for i in range(7):
             month_key = current_date.strftime('%Y-%m')
             result.append({
                 'month': current_date.strftime('%b %Y'),
                 'count': monthly_data.get(month_key, 0)
             })
             current_date = current_date + relativedelta(months=1)
-        
+
         return result
 
     def get_popular_books_data(self):
         """Get top 10 most borrowed books"""
         query = """
-            SELECT 
+            SELECT
                 b.id,
                 b.name,
                 COUNT(ll.id) as loan_count
@@ -113,7 +117,6 @@ class LibraryDashboard(models.Model):
         """
         self.env.cr.execute(query)
         results = self.env.cr.dictfetchall()
-        
         return [{'book': r['name'], 'count': r['loan_count']} for r in results]
 
     def get_overdue_loans_data(self):
@@ -122,50 +125,54 @@ class LibraryDashboard(models.Model):
         overdue_loans = self.env['library.loan'].search([
             ('state', '=', 'ongoing'),
             ('date_return_expected', '<', today)
-        ], order='date_return_expected asc')
-        
+        ], order='date_return_expected asc', limit=20)
+
         result = []
         for loan in overdue_loans:
             days_late = (today - loan.date_return_expected).days
             books = ', '.join(loan.loan_line_ids.mapped('book_id.name'))
-            
+
             result.append({
                 'id': loan.id,
                 'name': loan.name,
                 'member': loan.member_id.partner_id.name,
-                'member_phone': loan.member_id.partner_id.phone or loan.member_id.partner_id.mobile,
+                'member_phone': loan.member_id.partner_id.phone or loan.member_id.partner_id.mobile or '',
                 'books': books,
                 'due_date': loan.date_return_expected.strftime('%d %b %Y'),
                 'days_late': days_late,
                 'late_fee': loan.total_late_fee,
             })
-        
+
         return result
 
     def get_recent_activities_data(self):
         """Get latest 10 loan activities"""
         recent_loans = self.env['library.loan'].search([], order='create_date desc', limit=10)
-        
+
         result = []
         for loan in recent_loans:
-            action = 'Returned' if loan.state == 'returned' else 'Borrowed'
-            books_count = len(loan.loan_line_ids)
-            
+            action = 'Dikembalikan' if loan.state == 'returned' else ('Dipinjam' if loan.state == 'ongoing' else 'Draft')
+            books = ', '.join(loan.loan_line_ids.mapped('book_id.name')[:3])
+            if len(loan.loan_line_ids) > 3:
+                books += f' (+{len(loan.loan_line_ids) - 3} lainnya)'
+
             result.append({
                 'id': loan.id,
+                'name': loan.name,
                 'member': loan.member_id.partner_id.name,
                 'action': action,
-                'date': loan.date_borrow.strftime('%d %b %Y'),
-                'books_count': books_count,
+                'date': loan.date_borrow.strftime('%d %b %Y') if loan.date_borrow else '',
+                'books': books,
+                'books_count': len(loan.loan_line_ids),
                 'state': loan.state,
             })
-        
+
         return result
 
     def get_top_members_data(self):
         """Get top 10 most active members"""
         query = """
-            SELECT 
+            SELECT
                 m.id,
                 p.name,
                 COUNT(l.id) as loan_count
@@ -178,14 +185,34 @@ class LibraryDashboard(models.Model):
         """
         self.env.cr.execute(query)
         results = self.env.cr.dictfetchall()
-        
         return [{'member': r['name'], 'loan_count': r['loan_count']} for r in results]
 
+    def get_category_stats(self):
+        """Get loan stats by member type"""
+        query = """
+            SELECT
+                m.member_type,
+                COUNT(DISTINCT l.id) as loan_count,
+                COUNT(DISTINCT m.id) as member_count
+            FROM library_member m
+            LEFT JOIN library_loan l ON l.member_id = m.id
+            GROUP BY m.member_type
+        """
+        self.env.cr.execute(query)
+        results = self.env.cr.dictfetchall()
+        labels = {'student': 'Siswa', 'teacher': 'Guru', 'general': 'Umum'}
+        return [{
+            'type': labels.get(r['member_type'], r['member_type'] or 'Lainnya'),
+            'loan_count': r['loan_count'],
+            'member_count': r['member_count'],
+        } for r in results]
+
+    # ---- Action Methods ----
+
     def action_view_overdue_loans(self):
-        """Open overdue loans list view"""
         today = fields.Date.today()
         return {
-            'name': 'Overdue Loans',
+            'name': 'Pinjaman Terlambat',
             'type': 'ir.actions.act_window',
             'res_model': 'library.loan',
             'view_mode': 'list,form',
@@ -194,9 +221,8 @@ class LibraryDashboard(models.Model):
         }
 
     def action_view_all_loans(self):
-        """Open all loans list view"""
         return {
-            'name': 'All Loans',
+            'name': 'Semua Pinjaman',
             'type': 'ir.actions.act_window',
             'res_model': 'library.loan',
             'view_mode': 'list,form',
@@ -204,9 +230,8 @@ class LibraryDashboard(models.Model):
         }
 
     def action_view_books(self):
-        """Open books list view"""
         return {
-            'name': 'All Books',
+            'name': 'Semua Buku',
             'type': 'ir.actions.act_window',
             'res_model': 'library.book',
             'view_mode': 'kanban,list,form',
@@ -214,11 +239,19 @@ class LibraryDashboard(models.Model):
         }
 
     def action_view_members(self):
-        """Open members list view"""
         return {
-            'name': 'All Members',
+            'name': 'Semua Anggota',
             'type': 'ir.actions.act_window',
             'res_model': 'library.member',
             'view_mode': 'list,form',
             'domain': [],
+        }
+
+    def action_view_active_loans(self):
+        return {
+            'name': 'Pinjaman Aktif',
+            'type': 'ir.actions.act_window',
+            'res_model': 'library.loan',
+            'view_mode': 'list,form',
+            'domain': [('state', '=', 'ongoing')],
         }
