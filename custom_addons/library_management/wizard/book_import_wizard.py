@@ -98,7 +98,7 @@ class BookImportWizard(models.TransientModel):
                     'publisher_id': publisher_partner.id,
                     'isbn': isbn_13,
                     'cover_image': image_base64,
-                    'rating': rating,
+                    'external_rating': rating,
                 })
                 created_count += 1
 
