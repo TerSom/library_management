@@ -18,11 +18,27 @@ class LibraryLoan(models.Model):
     loan_line_ids = fields.One2many('library.loan.line', 'loan_id', string='Loan Lines')
     total_late_fee = fields.Float(string='Total Late Fee', compute='_compute_total_late_fee', store=True)
 
+    book_count = fields.Integer(string='Jumlah Buku', compute='_compute_loan_stats', store=True)
+    is_overdue = fields.Boolean(string='Terlambat', compute='_compute_loan_stats', store=True)
+    renewal_count = fields.Integer(string='Jumlah Perpanjangan', default=0, readonly=True)
+    max_renewal = fields.Integer(string='Maks Perpanjangan', default=2)
+
     state = fields.Selection([
         ('draft', 'Draft'),
         ('ongoing', 'Ongoing'),
         ('returned', 'Returned'),
     ], string='Status', default='draft', tracking=True)
+
+    @api.depends('loan_line_ids', 'date_return_expected', 'state')
+    def _compute_loan_stats(self):
+        today = fields.Date.today()
+        for record in self:
+            record.book_count = len(record.loan_line_ids)
+            record.is_overdue = bool(
+                record.state == 'ongoing' and
+                record.date_return_expected and
+                record.date_return_expected < today
+            )
 
     @api.constrains('loan_line_ids')
     def _check_loan_lines(self):
@@ -181,4 +197,22 @@ class LibraryLoan(models.Model):
             record.write({'state': 'returned'})
             if record.total_late_fee > 0:
                 record.action_create_invoice()
+
+    def action_renew(self):
+        for record in self:
+            if record.state != 'ongoing':
+                raise ValidationError("Hanya transaksi yang sedang berlangsung (ongoing) yang dapat diperpanjang.")
+            if record.renewal_count >= record.max_renewal:
+                raise ValidationError(f"Batas perpanjangan transaksi ini sudah maksimal ({record.max_renewal} kali).")
+            if record.total_late_fee > 0:
+                raise ValidationError("Buku sudah melewati batas waktu dan memiliki denda berjalan. Harap selesaikan pengembalian.")
+
+            new_date = record.date_return_expected + timedelta(days=7)
+            record.write({
+                'date_return_expected': new_date,
+                'renewal_count': record.renewal_count + 1,
+            })
+            record.message_post(
+                body=f"Tenggat waktu pinjaman diperpanjang 7 hari menjadi {new_date}. (Perpanjangan ke-{record.renewal_count}/{record.max_renewal})"
+            )
             
