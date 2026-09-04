@@ -1,6 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- SEARCH VIEW -->
+    <record id="library_member_view_search" model="ir.ui.view">
+        <field name="name">library.member.view.search</field>
+        <field name="model">library.member</field>
+        <field name="arch" type="xml">
+            <search string="Cari Member">
+                <field name="name" string="Nama / No. Member" filter_domain="['|', ('name', 'ilike', self), ('member_number', 'ilike', self)]"/>
+                <field name="email"/>
+                <field name="phone"/>
+                <separator/>
+                <filter string="Student" name="filter_student" domain="[('member_type', '=', 'student')]"/>
+                <filter string="Teacher" name="filter_teacher" domain="[('member_type', '=', 'teacher')]"/>
+                <filter string="General" name="filter_general" domain="[('member_type', '=', 'general')]"/>
+                <filter string="Sedang Meminjam Buku" name="filter_has_active_loan" domain="[('active_loan_count', '>', 0)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Tipe Member" name="group_by_type" context="{'group_by': 'member_type'}"/>
+                    <filter string="Bulan Registrasi" name="group_by_reg_date" context="{'group_by': 'registration_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
 
+    <!-- LIST VIEW -->
     <record id="library_member_view_list" model="ir.ui.view">
         <field name="name">library.member.view.list</field>
         <field name="model">library.member</field>
@@ -9,27 +31,43 @@
                 <field name="partner_id" widget="many2one_avatar"/>
                 <field name="name" decoration-bf="1"/>
                 <field name="member_number" decoration-bf="1"/>
-                <field name="member_type" widget="badge"/>
-                <field name="max_loan_limit"/>
-                <field name="phone" widget="phone"/>
-                <field name="email" widget="email"/>
-                <field name="registration_date"/>
+                <field name="member_type" widget="badge" decoration-info="member_type == 'student'" decoration-success="member_type == 'teacher'" decoration-warning="member_type == 'general'"/>
+                <field name="active_loan_count" string="Pinjam Aktif"/>
+                <field name="max_loan_limit" string="Limit"/>
+                <field name="phone" widget="phone" optional="show"/>
+                <field name="email" widget="email" optional="show"/>
+                <field name="registration_date" optional="hide"/>
             </list>
         </field>
     </record>
 
+    <!-- FORM VIEW -->
     <record id="library_memeber_view_form" model="ir.ui.view">
         <field name="name">library.member.view.form</field>
         <field name="model">library.member</field>
         <field name="arch" type="xml">
             <form string="Library Member">
                 <sheet>
-                    <field name="image_1920" widget="image" class="oe_avatar" options="{'preview_image': 'avatar_128', 'size': [90, 90]}"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_member_loans" type="object" class="oe_stat_button" icon="fa-book">
+                            <field name="total_loan_count" widget="statinfo" string="Total Pinjam"/>
+                        </button>
+                    </div>
+                    <field name="image_1920" widget="image" class="oe_avatar" options="{'preview_image': 'avatar_128', 'size': [100, 100]}"/>
                     <div class="oe_title">
                         <label for="partner_id" class="oe_edit_only" string="Nama Member"/>
                         <h1>
                             <field name="partner_id" placeholder="e.g. John Doe" options="{'no_quick_create': True}"/>
                         </h1>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <span class="text-secondary fw-bold">
+                                <i class="fa fa-id-card me-1 text-muted"/>No. Member: <field name="member_number" readonly="1" class="text-dark"/>
+                            </span>
+                            <span class="text-muted">|</span>
+                            <span class="text-muted">
+                                Sedang meminjam: <strong class="text-danger"><field name="active_loan_count"/></strong> / <field name="max_loan_limit"/> Buku
+                            </span>
+                        </div>
                     </div>
                     <group>
                         <group string="Keanggotaan">
@@ -44,18 +82,76 @@
                             <field name="email" widget="email"/>
                         </group>
                     </group>
-                    <group string="Informasi Tambahan">
-                        <group>
-                            <field name="website" widget="url"/>
-                            <field name="function" placeholder="e.g. Mahasiswa"/>
-                        </group>
-                        <group>
-                            <field name="title" options="{'no_create': True}"/>
-                        </group>
-                    </group>
+                    <notebook>
+                        <page string="Riwayat Transaksi Peminjaman" name="member_loans">
+                            <field name="loan_ids" readonly="1">
+                                <list decoration-danger="is_overdue" decoration-warning="state == 'ongoing' and not is_overdue" decoration-success="state == 'returned'">
+                                    <field name="name" string="No. Referensi"/>
+                                    <field name="date_borrow"/>
+                                    <field name="date_return_expected"/>
+                                    <field name="book_count" string="Jumlah Buku"/>
+                                    <field name="total_late_fee" widget="monetary" string="Denda"/>
+                                    <field name="is_overdue" column_invisible="True"/>
+                                    <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'ongoing'" decoration-success="state == 'returned'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Informasi Tambahan" name="extra_info">
+                            <group>
+                                <group>
+                                    <field name="website" widget="url"/>
+                                    <field name="function" placeholder="e.g. Mahasiswa / Dosen"/>
+                                </group>
+                                <group>
+                                    <field name="title" options="{'no_create': True}"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>
 
+    <!-- KANBAN VIEW -->
+    <record id="library_member_view_kanban" model="ir.ui.view">
+        <field name="name">library.member.view.kanban</field>
+        <field name="model">library.member</field>
+        <field name="arch" type="xml">
+            <kanban sample="1">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="member_number"/>
+                <field name="member_type"/>
+                <field name="active_loan_count"/>
+                <field name="max_loan_limit"/>
+                <field name="avatar_128"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click d-flex align-items-center p-2">
+                            <aside class="o_kanban_image me-3">
+                                <field name="avatar_128" widget="image" options="{'img_class': 'rounded-circle shadow-sm'}" alt="Avatar"/>
+                            </aside>
+                            <div class="oe_kanban_details flex-grow-1">
+                                <strong class="o_kanban_record_title fs-6 mb-1 d-block">
+                                    <field name="name"/>
+                                </strong>
+                                <div class="text-muted small mb-1">
+                                    <i class="fa fa-id-card me-1" title="Member No"/>
+                                    <field name="member_number"/>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between mt-2">
+                                    <field name="member_type" widget="badge"/>
+                                    <span class="badge bg-light text-dark border small">
+                                        Pinjam: <field name="active_loan_count"/>/<field name="max_loan_limit"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
 </odoo>

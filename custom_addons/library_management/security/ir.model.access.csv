@@ -13,3 +13,5 @@ access_book_import_user,library.book_import.user,model_book_import_wizard,group_
 access_book_import_manager,library.book_import.manager,model_book_import_wizard,group_library_manager,1,1,1,1
 access_dashboard_user,library.dashboard.user,model_library_dashboard,group_library_user,1,0,0,0
 access_dashboard_manager,library.dashboard.manager,model_library_dashboard,group_library_manager,1,1,1,1
+access_book_review_user,library.book.review.user,model_library_book_review,group_library_user,1,1,1,0
+access_book_review_manager,library.book.review.manager,model_library_book_review,group_library_manager,1,1,1,1

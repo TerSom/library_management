@@ -32,6 +32,11 @@ class Libraryloan(models.Model):
         invoice = self.env['account.move'].create(invoice_vals)
 
         self.invoice_id = invoice.id
+        self.message_post(
+            body=f"Tagihan Denda Dibuat: Invoice nomor {invoice.name or 'Draft'} diterbitkan sebesar Rp {self.total_late_fee:,.0f} untuk member {self.member_id.name}.",
+            message_type='notification',
+            subtype_xmlid='mail.mt_note'
+        )
 
         return self.action_view_invoice()
     

@@ -5,7 +5,8 @@
         <record id="action_library_book" model="ir.actions.act_window">
             <field name="name">Books</field>
             <field name="res_model">library.book</field>
-            <field name="view_mode">list,form,kanban</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="search_view_id" ref="library_book_view_search"/>
             <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Belum ada buku nih. Yuk tambah baru atau import dari API!
@@ -14,15 +15,17 @@
         </record>
 
         <record id="action_library_member" model="ir.actions.act_window">
-            <field name="name">members</field>
+            <field name="name">Members</field>
             <field name="res_model">library.member</field>
-            <field name="view_mode">list,form</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="search_view_id" ref="library_member_view_search"/>
         </record>
 
         <record id="action_library_loan" model="ir.actions.act_window">
             <field name="name">loans</field>
             <field name="res_model">library.loan</field>
-            <field name="view_mode">list,form</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="search_view_id" ref="library_loan_view_search"/>
         </record>
 
         <!-- menus -->

@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 
 class LibraryLoan(models.Model):
     _inherit = 'library.loan'
@@ -56,6 +57,17 @@ class LibraryLoan(models.Model):
         return res
 
     def action_return(self):
+        for record in self:
+            unvalidated_outgoing = record.picking_ids.filtered(
+                lambda p: p.picking_type_code == 'outgoing' and p.state != 'done'
+            )
+            if unvalidated_outgoing:
+                picking_names = ", ".join(unvalidated_outgoing.mapped('name'))
+                raise UserError(
+                    f"Buku belum bisa dikembalikan! Surat jalan pengeluaran ({picking_names}) "
+                    f"harus divalidasi (status Done) terlebih dahulu oleh bagian gudang."
+                )
+
         res = super().action_return()
         for record in self:
             record._create_stock_transfer('incoming')

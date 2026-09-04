@@ -6,7 +6,10 @@ class LibraryLoanLine(models.Model):
 
     loan_id = fields.Many2one('library.loan', string='Loan Reference', ondelete='cascade')
     book_id = fields.Many2one('library.book', string='Book', required=True)
-    
+    author_id = fields.Many2one(related='book_id.author_id', string='Penulis', readonly=True)
+    cover_image = fields.Image(related='book_id.cover_image', string='Cover', readonly=True)
+    isbn = fields.Char(related='book_id.isbn', string='ISBN', readonly=True)
+
     date_return_actual = fields.Date(string='Return Date',readonly=True)
     late_fee = fields.Float(string='Late Fee', compute='_compute_late_fee', store=True , readonly=True)
 

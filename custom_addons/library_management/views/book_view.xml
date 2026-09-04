@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- SEARCH VIEW -->
+    <record id="library_book_view_search" model="ir.ui.view">
+        <field name="name">library.book.view.search</field>
+        <field name="model">library.book</field>
+        <field name="arch" type="xml">
+            <search string="Cari Buku">
+                <field name="name" string="Judul / ISBN" filter_domain="['|', ('name', 'ilike', self), ('isbn', 'ilike', self)]"/>
+                <field name="author_id"/>
+                <field name="publisher_id"/>
+                <separator/>
+                <filter string="Tersedia (Aktif)" name="filter_active" domain="[('active', '=', True)]"/>
+                <filter string="Rating Tinggi (>= 4.0)" name="filter_high_rating" domain="[('rating', '>=', 4.0)]"/>
+                <filter string="Diarsipkan" name="filter_archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Penulis" name="group_by_author" context="{'group_by': 'author_id'}"/>
+                    <filter string="Penerbit" name="group_by_publisher" context="{'group_by': 'publisher_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
     <!-- LIST VIEW -->
     <record id="library_book_view_list" model="ir.ui.view">
         <field name="name">library.book.view.tree</field>
@@ -7,47 +28,87 @@
         <field name="arch" type="xml">
             <list string="Books" sample="1">
                 <field name="name" decoration-bf="1"/>
-                <field name="isbn" />
+                <field name="isbn"/>
                 <field name="author_id" widget="many2one_avatar"/>
-                <field name="publisher_id" />
+                <field name="publisher_id" optional="show"/>
                 <field name="pages" optional="show"/>
+                <field name="loan_count" string="Dipinjam (Kali)" optional="show"/>
                 <field name="rating" optional="show" readonly="1"/>
+                <field name="review_count" string="Review" optional="show"/>
                 <field name="active" widget="boolean_toggle" optional="hide"/>
             </list>
         </field>
     </record>
 
-    <!-- FROM VIEW -->
+    <!-- FORM VIEW -->
     <record id="library_book_view_form" model="ir.ui.view">
         <field name="name">library.book.view.form</field>
         <field name="model">library.book</field>
         <field name="arch" type="xml">
             <form string="Book">
                 <sheet>
-                    <field name="cover_image" widget="image" class="oe_avatar" options="{'preview_image': 'cover_image', 'size': [90, 90]}"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_loans" type="object" class="oe_stat_button" icon="fa-bookmark">
+                            <field name="loan_count" widget="statinfo" string="Riwayat Pinjam"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="cover_image" widget="image" class="oe_avatar" options="{'preview_image': 'cover_image', 'size': [110, 110]}"/>
                     <div class="oe_title">
                         <label for="name" class="oe_edit_only" string="Judul Buku"/>
                         <h1>
-                            <field name="name" placeholder="e.g. Harry Potter and the Sorcerer's Stone"/>
+                            <field name="name" placeholder="e.g. Clean Code: A Handbook of Agile Software Craftsmanship"/>
                         </h1>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <span class="text-warning">
+                                <i class="fa fa-star me-1" title="Rating"/>
+                                <strong class="fs-5"><field name="rating" readonly="1"/></strong>
+                                <span class="text-muted small"> / 5.0</span>
+                            </span>
+                            <span class="text-muted small">
+                                (<field name="review_count" readonly="1"/> ulasan member)
+                            </span>
+                        </div>
                     </div>
                     <group>
                         <group string="Informasi Penerbitan">
-                            <field name="author_id" options="{'no_create': True, 'no_edit': True}"/>
+                            <field name="author_id" options="{'no_create': True, 'no_edit': True}" widget="many2one_avatar"/>
                             <field name="publisher_id" options="{'no_create': True, 'no_edit': True}"/>
                         </group>
-                        <group string="Spesifikasi &amp; Status">
-                            <field name="isbn" />
-                            <field name="pages" />
-                            <field name="rating" readonly="1"/>
-                            <field name="active" widget="boolean_toggle" />
+                        <group string="Spesifikasi &amp; Identitas">
+                            <field name="isbn" placeholder="e.g. 9780132350884"/>
+                            <field name="pages"/>
+                            <field name="external_rating" readonly="1" optional="hide"/>
+                            <field name="active" widget="boolean_toggle"/>
                         </group>
                     </group>
+                    <notebook>
+                        <page string="Ulasan &amp; Rating Member" name="reviews">
+                            <field name="review_ids">
+                                <list editable="bottom">
+                                    <field name="member_id" widget="many2one_avatar" options="{'no_create': True}"/>
+                                    <field name="rating"/>
+                                    <field name="review_date"/>
+                                    <field name="comment"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Riwayat Peminjaman" name="loan_history">
+                            <field name="loan_line_ids" readonly="1">
+                                <list>
+                                    <field name="loan_id" string="No. Ref Peminjaman"/>
+                                    <field name="date_return_actual" string="Tanggal Kembali"/>
+                                    <field name="late_fee" widget="monetary" string="Denda"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
     </record>
 
+    <!-- KANBAN VIEW -->
     <record id="library_book_view_kanban" model="ir.ui.view">
         <field name="name">library.book.view.kanban</field>
         <field name="model">library.book</field>
@@ -58,26 +119,33 @@
                 <field name="author_id"/>
                 <field name="cover_image"/>
                 <field name="rating"/>
+                <field name="review_count"/>
+                <field name="loan_count"/>
 
                 <templates>
                     <t t-name="card">
-                        <div class="oe_kanban_global_click d-flex align-items-center">
+                        <div class="oe_kanban_global_click d-flex align-items-start p-2">
                             <aside class="o_kanban_image me-3">
-                                <field name="cover_image" widget="image" options="{'img_class': 'o_image_64_contain rounded'}" alt="Cover" invisible="not cover_image"/>
+                                <field name="cover_image" widget="image" options="{'img_class': 'o_image_64_contain rounded shadow-sm'}" alt="Cover" invisible="not cover_image"/>
                             </aside>
 
                             <div class="oe_kanban_details flex-grow-1">
-                                <strong class="o_kanban_record_title fs-5 mb-1 d-block">
+                                <strong class="o_kanban_record_title fs-6 mb-1 d-block text-truncate">
                                     <field name="name"/>
                                 </strong>
-                                <div class="text-muted small">
-                                    <i class="fa fa-user me-1" aria-label="Author"/>
+                                <div class="text-muted small mb-1">
+                                    <i class="fa fa-user me-1" title="Author"/>
                                     <field name="author_id"/>
                                 </div>
-                                <div class="mt-1 text-warning">
-                                    <i class="fa fa-star"/>
-                                    <field name="rating"/>
-                                    <span class="text-muted"> / 5</span>
+                                <div class="d-flex align-items-center justify-content-between mt-2">
+                                    <div class="text-warning small">
+                                        <i class="fa fa-star me-1" title="Rating"/>
+                                        <span class="fw-bold"><field name="rating"/></span>
+                                        <span class="text-muted"> (<field name="review_count"/>)</span>
+                                    </div>
+                                    <span class="badge bg-light text-dark border small">
+                                        <i class="fa fa-bookmark me-1 text-primary" title="Pinjam"/> <field name="loan_count"/>x
+                                    </span>
                                 </div>
                             </div>
                         </div>

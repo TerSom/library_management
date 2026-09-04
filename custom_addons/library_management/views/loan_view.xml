@@ -1,17 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <!-- SEARCH VIEW -->
+        <record id="library_loan_view_search" model="ir.ui.view">
+            <field name="name">library.loan.view.search</field>
+            <field name="model">library.loan</field>
+            <field name="arch" type="xml">
+                <search string="Cari Peminjaman">
+                    <field name="name" string="Nomor / Member" filter_domain="['|', ('name', 'ilike', self), ('member_id.name', 'ilike', self)]"/>
+                    <field name="member_id"/>
+                    <filter string="Draft" name="filter_draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Sedang Dipinjam" name="filter_ongoing" domain="[('state', '=', 'ongoing')]"/>
+                    <filter string="Terlambat" name="filter_overdue" domain="[('is_overdue', '=', True)]"/>
+                    <filter string="Sudah Kembali" name="filter_returned" domain="[('state', '=', 'returned')]"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                        <filter string="Member" name="group_by_member" context="{'group_by': 'member_id'}"/>
+                        <filter string="Bulan Pinjam" name="group_by_borrow_date" context="{'group_by': 'date_borrow:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- KANBAN VIEW -->
+        <record id="library_loan_view_kanban" model="ir.ui.view">
+            <field name="name">library.loan.view.kanban</field>
+            <field name="model">library.loan</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="state" sample="1">
+                    <field name="id"/>
+                    <field name="name"/>
+                    <field name="member_id"/>
+                    <field name="date_return_expected"/>
+                    <field name="total_late_fee"/>
+                    <field name="book_count"/>
+                    <field name="is_overdue"/>
+                    <templates>
+                        <t t-name="card">
+                            <div class="oe_kanban_global_click p-2">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <strong class="fs-6 text-primary"><field name="name"/></strong>
+                                    <span t-if="record.is_overdue.raw_value" class="badge bg-danger">Terlambat</span>
+                                </div>
+                                <div class="text-muted small mb-1">
+                                    <i class="fa fa-user me-1" title="Member"/> <field name="member_id"/>
+                                </div>
+                                <div class="small mb-1">
+                                    <i class="fa fa-book me-1 text-info" title="Jumlah Buku"/> <field name="book_count"/> Buku
+                                </div>
+                                <div class="small text-secondary">
+                                    <i class="fa fa-calendar me-1" title="Tenggat Waktu"/> Kembali: <field name="date_return_expected"/>
+                                </div>
+                                <div t-if="record.total_late_fee.raw_value > 0" class="mt-2 text-danger fw-bold small">
+                                    Denda: <field name="total_late_fee" widget="monetary"/>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
         <!-- LIST VIEW -->
         <record id="library_loan_view_list" model="ir.ui.view">
             <field name="name">library.loan.view.list</field>
             <field name="model">library.loan</field>
             <field name="arch" type="xml">
-                <list string="Loans" decoration-danger="total_late_fee > 0 and state != 'returned'" decoration-warning="state == 'ongoing'" decoration-info="state == 'draft'" sample="1">
+                <list string="Loans" decoration-danger="is_overdue" decoration-warning="state == 'ongoing' and not is_overdue" decoration-info="state == 'draft'" decoration-success="state == 'returned'" sample="1">
                     <field name="name" decoration-bf="1"/>
                     <field name="member_id" widget="many2one_avatar"/>
-                    <field name="date_borrow" />
-                    <field name="date_return_expected" />
-                    <field name="total_late_fee" sum="Total Late Fee"/>
+                    <field name="date_borrow"/>
+                    <field name="date_return_expected"/>
+                    <field name="book_count" string="Buku"/>
+                    <field name="renewal_count" string="Perpanjang" optional="show"/>
+                    <field name="is_overdue" column_invisible="True"/>
+                    <field name="total_late_fee" sum="Total Late Fee" widget="monetary"/>
                     <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'ongoing'" decoration-success="state == 'returned'"/>
                 </list>
             </field>
@@ -24,37 +88,50 @@
             <field name="arch" type="xml">
                 <form string="Loan">
                     <header>
-                        <button string="Confirm" name="action_confirm" type="object" class="oe_highlight" invisible="state != 'draft'"/>
-                        <button string="Return" name="action_return" type="object" class="oe_highlight" invisible="state != 'ongoing'"/>
-                        <button string="Email" name="action_send_email" type="object" class="btn-secondary" invisible="state != 'ongoing'" />
-                        <field name="state" widget="statusbar" statusbar_visible="draft,ongoing,returned" />
+                        <button string="Confirm Peminjaman" name="action_confirm" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                        <button string="Kembalikan Buku" name="action_return" type="object" class="btn-primary" invisible="state != 'ongoing'"/>
+                        <button string="Perpanjang (+7 Hari)" name="action_renew" type="object" class="btn-primary" invisible="state != 'ongoing' or renewal_count >= max_renewal"/>
+                        <button string="Kirim Email" name="action_send_email" type="object" class="btn-secondary" invisible="state != 'ongoing'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,ongoing,returned"/>
                     </header>
                     <sheet>
                         <div class="oe_button_box" name="button_box">
+                            <button class="oe_stat_button" icon="fa-book" type="object" name="action_confirm" invisible="1">
+                                <field name="book_count" widget="statinfo" string="Buku Dipinjam"/>
+                            </button>
                         </div>
                         <div class="oe_title">
                             <span class="o_form_label">Nomor Referensi</span>
-                            <h1>
+                            <h1 class="d-flex align-items-center gap-2">
                                 <field name="name" readonly="1"/>
+                                <span class="badge bg-danger fs-6" invisible="not is_overdue">Jatuh Tempo / Terlambat</span>
                             </h1>
                         </div>
                         <group>
-                            <group string="Informasi Utama" name="main_info">
-                                <field name="member_id" widget="many2one_avatar" options="{'no_create': True, 'no_edit': True}"/>
-                                <field name="total_late_fee" />
+                            <group string="Informasi Anggota &amp; Biaya" name="main_info">
+                                <field name="member_id" widget="many2one_avatar" options="{'no_create': True, 'no_edit': True}" readonly="state != 'draft'"/>
+                                <field name="total_late_fee" widget="monetary" readonly="1" decoration-danger="total_late_fee > 0" class="fw-bold"/>
+                                <field name="is_overdue" invisible="1"/>
                             </group>
-                            <group string="Tanggal Peminjaman" name="dates">
-                                <field name="date_borrow"/>
-                                <field name="date_return_expected"/>
+                            <group string="Jadwal &amp; Batas Waktu" name="dates">
+                                <field name="date_borrow" readonly="state != 'draft'"/>
+                                <field name="date_return_expected" readonly="state == 'returned'"/>
+                                <label for="renewal_count" string="Status Perpanjangan" invisible="state == 'draft'"/>
+                                <div class="o_row" invisible="state == 'draft'">
+                                    <field name="renewal_count" readonly="1"/> / <field name="max_renewal" readonly="1"/> Kali
+                                </div>
                             </group>
                         </group>
                         <notebook>
                             <page string="Detail Buku Dipinjam" name="loan_lines">
-                                <field name="loan_line_ids">
+                                <field name="loan_line_ids" readonly="state == 'returned'">
                                     <list editable="bottom">
+                                        <field name="cover_image" widget="image" options="{'size': [36, 36]}" optional="show"/>
                                         <field name="book_id" options="{'no_create': True}"/>
-                                        <field name="date_return_actual" />
-                                        <field name="late_fee" />
+                                        <field name="author_id" optional="show"/>
+                                        <field name="isbn" optional="hide"/>
+                                        <field name="date_return_actual"/>
+                                        <field name="late_fee" widget="monetary" decoration-danger="late_fee > 0"/>
                                     </list>
                                 </field>
                             </page>

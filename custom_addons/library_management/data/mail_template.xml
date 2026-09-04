@@ -1,40 +1,163 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
-        <record id="email_template_library_loan" model="mail.template">
-            <field name="name">Library: Notifikasi Peminjaman</field>
-            <field name="model_id" ref="library_management.model_library_loan"/>
-            <field name="subject">Informasi Peminjaman Buku - {{ object.name }}</field>
-            <field name="email_to">{{ object.member_id.partner_id.email }}</field>
+    <!-- Template Peminjaman Buku (Modern Minimalist Card Style) -->
+    <record id="email_template_library_loan" model="mail.template">
+        <field name="name">Library: Notifikasi Peminjaman</field>
+        <field name="model_id" ref="library_management.model_library_loan"/>
+        <field name="subject">Konfirmasi Peminjaman Buku - {{ object.name }}</field>
+        <field name="email_to">{{ object.member_id.partner_id.email }}</field>
 
-            <!-- Desain Isi Email -->
-            <field name="body_html" type="html">
-                <div style="margin: 0px; padding: 0px; font-family: Arial, sans-serif;">
-                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
-                        Halo <t t-out="object.member_id.partner_id.name"></t>,
-                        <br/>
-                        <br/>
-                        Terima kasih telah meminjam buku di perpustakaan kami. Berikut adalah detail peminjaman Anda:
-                        <br/>
-                        <br/>
-                        <strong>No. Referensi:</strong>
-                        <t t-out="object.name"></t>
-                        <br/>
-                        <strong>Tanggal Pinjam:</strong>
-                        <t t-out="object.date_borrow"></t>
-                        <br/>
-                        <strong>Tenggat Pengembalian:</strong>
-                        <t t-out="object.date_return_expected"></t>
-                        <br/>
-                        <br/>
-                        Mohon kembalikan buku tepat waktu untuk menghindari denda keterlambatan.
-                        <br/>
-                        <br/>
-                        Salam hangat,<br/>
-                        Admin Perpustakaan
-                    </p>
-                </div>
-            </field>
-        </record>
-    </data>
+        <field name="body_html" type="html">
+            <div style="background-color: #f4f5f7; padding: 40px 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; line-height: 1.6;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); margin: 0 auto;">
+
+                    <!-- BRAND / HEADER -->
+                    <tr>
+                        <td align="center" style="padding: 36px 30px 10px 30px;">
+                            <span style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: #6366f1;">
+                                Perpustakaan<span style="color: #ec4899;">Digital</span>
+                            </span>
+                        </td>
+                    </tr>
+
+                    <!-- HERO HEADLINE -->
+                    <tr>
+                        <td align="center" style="padding: 10px 35px 5px 35px;">
+                            <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #0f172a; letter-spacing: -0.8px;">
+                                Detail Peminjaman Anda
+                            </h1>
+                            <p style="margin: 12px 0 0 0; font-size: 14px; color: #64748b; line-height: 1.5;">
+                                Halo <strong style="color: #0f172a;"><t t-out="object.member_id.name"/></strong>, transaksi peminjaman buku Anda telah berhasil dicatat di sistem perpustakaan.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- HERO IMAGE / BANNER CARD -->
+                    <tr>
+                        <td style="padding: 20px 30px 10px 30px;">
+                            <div style="background: linear-gradient(135deg, #312e81 0%, #4338ca 50%, #6366f1 100%); border-radius: 14px; padding: 24px 20px; text-align: center; color: #ffffff;">
+                                <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8; margin-bottom: 6px;">
+                                    Nomor Transaksi
+                                </div>
+                                <div style="font-size: 22px; font-weight: 800; letter-spacing: 1px; margin-bottom: 12px;">
+                                    <t t-out="object.name"/>
+                                </div>
+                                <div style="display: inline-block; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 30px; padding: 6px 16px; font-size: 13px; font-weight: 600;">
+                                    Tenggat Waktu: <t t-out="object.date_return_expected"/>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- INFO GRID -->
+                    <tr>
+                        <td style="padding: 15px 30px 10px 30px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                                <tr>
+                                    <td width="50%" style="padding: 16px 20px; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+                                        <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px;">Tanggal Pinjam</div>
+                                        <div style="font-size: 14px; font-weight: 600; color: #1e293b; margin-top: 4px;">
+                                            <t t-out="object.date_borrow"/>
+                                        </div>
+                                    </td>
+                                    <td width="50%" style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
+                                        <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px;">Nomor Anggota</div>
+                                        <div style="font-size: 14px; font-weight: 600; color: #1e293b; margin-top: 4px;">
+                                            <t t-out="object.member_id.member_number"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="50%" style="padding: 16px 20px; border-right: 1px solid #e2e8f0;">
+                                        <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px;">Total Buku</div>
+                                        <div style="font-size: 14px; font-weight: 600; color: #1e293b; margin-top: 4px;">
+                                            <t t-out="object.book_count"/> Judul
+                                        </div>
+                                    </td>
+                                    <td width="50%" style="padding: 16px 20px;">
+                                        <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px;">Status</div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #10b981; margin-top: 4px;">
+                                            Sedang Dipinjam
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- SECTION TITLE: DAFTAR BUKU -->
+                    <tr>
+                        <td style="padding: 20px 30px 8px 30px;">
+                            <div style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b;">
+                                Daftar Buku yang Dipinjam
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- BOOK ITEMS -->
+                    <tr>
+                        <td style="padding: 0 30px 10px 30px;">
+                            <t t-foreach="object.loan_line_ids" t-as="line">
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 8px; padding: 12px 14px;">
+                                    <tr>
+                                        <td width="36" valign="middle" align="center" style="padding-right: 12px;">
+                                            <div style="width: 34px; height: 34px; border-radius: 8px; background: rgba(99, 102, 241, 0.1); color: #6366f1; text-align: center; line-height: 34px; font-size: 16px; font-weight: bold;">
+                                                &#128214;
+                                            </div>
+                                        </td>
+                                        <td valign="middle">
+                                            <div style="font-size: 14px; font-weight: 700; color: #0f172a;">
+                                                <t t-out="line.book_id.name"/>
+                                            </div>
+                                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+                                                Penulis: <span style="color: #334155;"><t t-out="line.author_id.name or '-'"/></span>
+                                                <t t-if="line.isbn"> | ISBN: <span style="color: #334155;"><t t-out="line.isbn"/></span></t>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </t>
+                        </td>
+                    </tr>
+
+                    <!-- REMINDER & RULES BOX -->
+                    <tr>
+                        <td style="padding: 10px 30px 20px 30px;">
+                            <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 16px 18px;">
+                                <div style="font-size: 13px; font-weight: 700; color: #92400e; margin-bottom: 4px;">
+                                    Aturan Keterlambatan:
+                                </div>
+                                <div style="font-size: 12px; color: #78350f; line-height: 1.5;">
+                                    Pengembalian melewati tanggal <strong><t t-out="object.date_return_expected"/></strong> dikenakan denda Rp 5.000 / hari per buku. Transaksi dapat diperpanjang maksimal 2 kali sebelum jatuh tempo.
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- TEAM SIGN-OFF -->
+                    <tr>
+                        <td align="center" style="padding: 10px 30px 24px 30px;">
+                            <div style="font-size: 13px; color: #64748b;">
+                                Salam hangat dari tim kami,
+                            </div>
+                            <div style="font-size: 14px; font-weight: 700; color: #6366f1; margin-top: 2px;">
+                                Tim Layanan Perpustakaan
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- FOOTER -->
+                    <tr>
+                        <td style="background-color: #f8fafc; padding: 24px 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <p style="margin: 0; font-size: 11px; color: #94a3b8; line-height: 1.5;">
+                                Anda menerima email ini karena terdaftar sebagai anggota resmi perpustakaan.<br/>
+                                © 2026 Sistem Manajemen Perpustakaan. Seluruh hak cipta dilindungi.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </div>
+        </field>
+    </record>
 </odoo>

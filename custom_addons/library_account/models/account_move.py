@@ -5,6 +5,18 @@ class AccountMove(models.Model):
 
     loan_id = fields.Many2one('library.loan', string='Library Loan', compute='_compute_loan_id', store=True, readonly=False)
 
+    def write(self, vals):
+        res = super().write(vals)
+        if 'payment_state' in vals:
+            for move in self:
+                if move.loan_id and vals['payment_state'] in ('paid', 'in_payment'):
+                    move.loan_id.message_post(
+                        body=f"Tagihan Denda Lunas: Invoice {move.name} sebesar Rp {move.amount_total:,.0f} telah dibayar (Status: {vals['payment_state']}). Surat jalan pengembalian buku kini dapat divalidasi.",
+                        message_type='notification',
+                        subtype_xmlid='mail.mt_note'
+                    )
+        return res
+
     @api.depends('invoice_origin')
     def _compute_loan_id(self):
         for move in self:
