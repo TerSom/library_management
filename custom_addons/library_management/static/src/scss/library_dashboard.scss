@@ -4,7 +4,9 @@
 .o_library_dashboard {
     background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
     padding: 24px;
-    min-height: 100vh;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
 
     // ==========================================
     // FIX: Override kanban record width for when

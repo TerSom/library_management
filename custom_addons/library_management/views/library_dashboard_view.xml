@@ -20,33 +20,33 @@
                 <field name="monthly_loans_count"/>
                 <field name="total_late_fee"/>
                 <templates>
-                    <t t-name="kanban-box">
+                    <t t-name="card">
                         <div class="container-fluid p-3">
                             <div class="row g-3">
                                 <div class="col-md-3 col-6">
                                     <div class="card border-0 shadow-sm text-center p-3">
-                                        <i class="fa fa-book fa-2x text-primary mb-2"/>
+                                        <i class="fa fa-book fa-2x text-primary mb-2" title="Buku"/>
                                         <h3 class="fw-bold text-primary mb-0"><field name="total_books"/></h3>
                                         <small class="text-muted">Total Buku</small>
                                     </div>
                                 </div>
                                 <div class="col-md-3 col-6">
                                     <div class="card border-0 shadow-sm text-center p-3">
-                                        <i class="fa fa-users fa-2x text-info mb-2"/>
+                                        <i class="fa fa-users fa-2x text-info mb-2" title="Anggota"/>
                                         <h3 class="fw-bold text-info mb-0"><field name="total_members"/></h3>
                                         <small class="text-muted">Total Anggota</small>
                                     </div>
                                 </div>
                                 <div class="col-md-3 col-6">
                                     <div class="card border-0 shadow-sm text-center p-3">
-                                        <i class="fa fa-exchange fa-2x text-success mb-2"/>
+                                        <i class="fa fa-exchange fa-2x text-success mb-2" title="Pinjaman Aktif"/>
                                         <h3 class="fw-bold text-success mb-0"><field name="active_loans_count"/></h3>
                                         <small class="text-muted">Pinjaman Aktif</small>
                                     </div>
                                 </div>
                                 <div class="col-md-3 col-6">
                                     <div class="card border-0 shadow-sm text-center p-3">
-                                        <i class="fa fa-exclamation-triangle fa-2x text-danger mb-2"/>
+                                        <i class="fa fa-exclamation-triangle fa-2x text-danger mb-2" title="Terlambat"/>
                                         <h3 class="fw-bold text-danger mb-0"><field name="overdue_loans_count"/></h3>
                                         <small class="text-muted">Terlambat</small>
                                     </div>
